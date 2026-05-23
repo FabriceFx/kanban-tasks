@@ -5,9 +5,12 @@
   "main": "parser.js",
   "type": "commonjs",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "esbuild src/content.js src/sidepanel.js --bundle --outdir=. --minify",
+    "watch": "esbuild src/content.js src/sidepanel.js --bundle --outdir=."
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "vitest": "^1.6.0"
   },
   "keywords": [

@@ -1,41 +1,9 @@
-/**
- * content.js
- * Script de contenu injecté dans Gmail.
- * 
- * Architecture : Shadow DOM
- * - Injecte un bouton "Tableau Kanban" dans la barre latérale Gmail
- * - Injecte un bouton "Ajouter au Kanban" dans la barre d'outils d'un e-mail ouvert
- * - Quand #kanban est actif, remplace la zone principale de Gmail par un Shadow DOM
- *   contenant l'intégralité de l'interface Kanban avec accès complet aux APIs Chrome
- * 
- * Les fonctions parseTaskNotes, serializeTaskNotes, isConfigTask sont
- * disponibles globalement via parser.js (chargé avant dans content_scripts).
- */
+(()=>{var T=(e,t)=>()=>(e&&(t=e(e=0)),t);var ge=(e,t)=>()=>(t||e((t={exports:{}}).exports,t),t.exports);function Z(e){if(!e||typeof e!="object")return{...A};let t="todo";(e.columnId==="todo"||e.columnId==="inprogress"||e.columnId==="done")&&(t=e.columnId);let n=[];Array.isArray(e.tags)&&(n=e.tags.map(r=>typeof r=="string"?r.trim():"").filter(r=>r.length>0));let a=[];Array.isArray(e.subtasks)&&(a=e.subtasks.filter(r=>r&&typeof r=="object"&&typeof r.title=="string").map(r=>({id:typeof r.id=="string"?r.id.trim():Math.random().toString(36).substring(2,9),title:r.title.trim(),completed:!!r.completed})));let s=typeof e.gmailId=="string"?e.gmailId.trim():null,i=typeof e.gmailSubject=="string"?e.gmailSubject.trim():null,c=null;return typeof e.gmailUrl=="string"&&e.gmailUrl.trim().startsWith("https://")&&(c=e.gmailUrl.trim()),{columnId:t,tags:n,subtasks:a,gmailId:s,gmailSubject:i,gmailUrl:c}}function Y(e){if(!e||typeof e!="string")return{description:"",metadata:{...A}};let t=e.split(W),n=t[0].trim();if(t.length<2)return{description:n,metadata:{...A}};try{let a=JSON.parse(t[1].trim()),s=Z(a);return{description:n,metadata:s}}catch(a){return console.warn("Erreur de lecture des m\xE9tadonn\xE9es JSON. Restauration des valeurs par d\xE9faut.",a),{description:e.trim(),metadata:{...A}}}}function L(e,t){let n=e?e.trim():"",a=Z(t),s=JSON.stringify(a,null,2);return`${n}${W}${s}`}function X(e){return!!(e&&typeof e=="object"&&e.title==="__KANBAN_CONFIG__")}var W,A,Q=T(()=>{W=`
 
-// ============================================================================
-// SECTION 1 : État global & Constantes
-// ============================================================================
-const GMAIL_SUBJECT_SELECTOR = "h2.hP";
-const GMAIL_TOOLBAR_SELECTOR = "div[role='toolbar'], .Cq, .G-tF";
-
-let kanbanShadowRoot = null;
-let kanbanInitialized = false;
-let originalDisplayStates = new Map();
-let isKanbanActive = false; // Gère l'affichage/masquage de l'interface indépendamment des hashs
-
-// État de l'application Kanban
-let authToken = null;
-let activeListId = null;
-let allTasks = {};
-let capturedEmail = null;
-
-// ============================================================================
-// SECTION 2 : Template HTML du Kanban (injecté dans le Shadow DOM)
-// ============================================================================
-function getKanbanHTML() {
-  return `
+--- KANBAN_METADATA ---
+`,A={columnId:"todo",tags:[],subtasks:[],gmailId:null,gmailSubject:null,gmailUrl:null}});function he(){return`
   <div class="kanban-root">
-    <!-- EN-TÊTE -->
+    <!-- EN-T\xCATE -->
     <header class="kanban-header">
       <div class="header-top">
         <div class="header-brand">
@@ -53,7 +21,7 @@ function getKanbanHTML() {
             <span class="sync-dot" id="sync-dot"></span>
             <span id="sync-text">Synchro...</span>
           </div>
-          <button id="btn-logout" class="btn-icon danger hidden" title="Se déconnecter">
+          <button id="btn-logout" class="btn-icon danger hidden" title="Se d\xE9connecter">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
@@ -75,7 +43,7 @@ function getKanbanHTML() {
     <!-- ZONE PRINCIPALE -->
     <main class="kanban-main">
 
-      <!-- SETUP WIZARD (masqué par défaut) -->
+      <!-- SETUP WIZARD (masqu\xE9 par d\xE9faut) -->
       <div id="setup-wizard" class="setup-wizard hidden">
         <div class="wizard-content">
           <div>
@@ -84,23 +52,23 @@ function getKanbanHTML() {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
               </svg>
             </div>
-            <h2 class="wizard-title">Accès à vos tâches Google</h2>
-            <p class="wizard-desc">Pour stocker de façon décentralisée et gratuite vos données, vous devez lier votre propre clé OAuth2 sécurisée.</p>
+            <h2 class="wizard-title">Acc\xE8s \xE0 vos t\xE2ches Google</h2>
+            <p class="wizard-desc">Pour stocker de fa\xE7on d\xE9centralis\xE9e et gratuite vos donn\xE9es, vous devez lier votre propre cl\xE9 OAuth2 s\xE9curis\xE9e.</p>
           </div>
 
           <div class="wizard-steps">
-            <h3 class="wizard-steps-title">🛠️ Étape de configuration rapide</h3>
+            <h3 class="wizard-steps-title">\u{1F6E0}\uFE0F \xC9tape de configuration rapide</h3>
             <div class="step-row">
               <span class="step-number">1</span>
-              <p>Copiez l'ID d'extension généré :<br><code id="extension-id-display">Chargement...</code></p>
+              <p>Copiez l'ID d'extension g\xE9n\xE9r\xE9 :<br><code id="extension-id-display">Chargement...</code></p>
             </div>
             <div class="step-row">
               <span class="step-number">2</span>
-              <p>Dans votre <a href="https://console.cloud.google.com" target="_blank">Google Console</a>, créez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.</p>
+              <p>Dans votre <a href="https://console.cloud.google.com" target="_blank">Google Console</a>, cr\xE9ez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.</p>
             </div>
             <div class="step-row">
               <span class="step-number">3</span>
-              <p>Activer la <strong>Google Tasks API</strong> et insérez votre clé <strong>client_id</strong> dans le fichier <strong>manifest.json</strong>.</p>
+              <p>Activer la <strong>Google Tasks API</strong> et ins\xE9rez votre cl\xE9 <strong>client_id</strong> dans le fichier <strong>manifest.json</strong>.</p>
             </div>
           </div>
 
@@ -114,7 +82,7 @@ function getKanbanHTML() {
               </svg>
               Se connecter avec Google
             </button>
-            <p class="wizard-footer-text" style="margin-top: 12px;">Vos données de tâches transitent uniquement entre Chrome et les serveurs sécurisés de Google.</p>
+            <p class="wizard-footer-text" style="margin-top: 12px;">Vos donn\xE9es de t\xE2ches transitent uniquement entre Chrome et les serveurs s\xE9curis\xE9s de Google.</p>
           </div>
         </div>
       </div>
@@ -137,15 +105,15 @@ function getKanbanHTML() {
           </button>
         </div>
         <p id="gmail-toast-subject" class="toast-subject"></p>
-        <button id="btn-add-gmail-task" class="btn-toast-add">Créer une tâche Kanban</button>
+        <button id="btn-add-gmail-task" class="btn-toast-add">Cr\xE9er une t\xE2che Kanban</button>
       </div>
 
       <!-- VUE KANBAN -->
       <div id="view-kanban" class="view-kanban">
-        <!-- Colonne À FAIRE -->
+        <!-- Colonne \xC0 FAIRE -->
         <div id="col-todo-container" class="kanban-column">
           <div class="column-header">
-            <span class="column-title">À faire</span>
+            <span class="column-title">\xC0 faire</span>
             <span id="badge-todo" class="column-badge badge-todo">0</span>
           </div>
           <div id="skeleton-todo" class="skeleton hidden">
@@ -160,7 +128,7 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            Ajouter une t\xE2che
           </button>
         </div>
 
@@ -181,14 +149,14 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            Ajouter une t\xE2che
           </button>
         </div>
 
-        <!-- Colonne TERMINÉ -->
+        <!-- Colonne TERMIN\xC9 -->
         <div id="col-done-container" class="kanban-column">
           <div class="column-header">
-            <span class="column-title">Terminé</span>
+            <span class="column-title">Termin\xE9</span>
             <span id="badge-done" class="column-badge badge-done">0</span>
           </div>
           <div id="skeleton-done" class="skeleton hidden">
@@ -201,7 +169,7 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            Ajouter une t\xE2che
           </button>
         </div>
       </div>
@@ -213,7 +181,7 @@ function getKanbanHTML() {
             <span class="smart-dot today"></span> Aujourd'hui
           </h2>
           <div id="smart-today">
-            <p class="smart-empty">Aucune tâche planifiée pour aujourd'hui.</p>
+            <p class="smart-empty">Aucune t\xE2che planifi\xE9e pour aujourd'hui.</p>
           </div>
         </div>
         <div>
@@ -221,44 +189,44 @@ function getKanbanHTML() {
             <span class="smart-dot week"></span> Cette semaine
           </h2>
           <div id="smart-week">
-            <p class="smart-empty">Aucune tâche planifiée pour cette semaine.</p>
+            <p class="smart-empty">Aucune t\xE2che planifi\xE9e pour cette semaine.</p>
           </div>
         </div>
       </div>
 
-      <!-- PANNEAU D'ÉDITION -->
+      <!-- PANNEAU D'\xC9DITION -->
       <div id="editor-panel" class="editor-overlay hidden">
         <div class="editor-panel">
           <div class="editor-header">
-            <h3>Détails de la tâche</h3>
+            <h3>D\xE9tails de la t\xE2che</h3>
             <button id="btn-close-editor" class="btn-close-editor">Fermer</button>
           </div>
           <div class="editor-body">
             <input type="hidden" id="edit-id">
             <div>
               <label class="form-label">Titre</label>
-              <input type="text" id="edit-title" class="form-input" placeholder="Nommez votre tâche...">
+              <input type="text" id="edit-title" class="form-input" placeholder="Nommez votre t\xE2che...">
             </div>
             <div>
               <label class="form-label">Description</label>
-              <textarea id="edit-desc" rows="4" class="form-textarea" placeholder="Rédigez des détails ou consignes..."></textarea>
+              <textarea id="edit-desc" rows="4" class="form-textarea" placeholder="R\xE9digez des d\xE9tails ou consignes..."></textarea>
             </div>
             <div class="form-row">
               <div>
-                <label class="form-label">Échéance</label>
+                <label class="form-label">\xC9ch\xE9ance</label>
                 <input type="date" id="edit-date" class="form-input">
               </div>
               <div>
                 <label class="form-label">Statut</label>
                 <select id="edit-status" class="form-select">
-                  <option value="todo">À faire</option>
+                  <option value="todo">\xC0 faire</option>
                   <option value="inprogress">En cours</option>
-                  <option value="done">Terminé</option>
+                  <option value="done">Termin\xE9</option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="form-label">Étiquettes (séparées par virgules)</label>
+              <label class="form-label">\xC9tiquettes (s\xE9par\xE9es par virgules)</label>
               <input type="text" id="edit-tags" class="form-input" placeholder="ex: Urgent, Projet client">
             </div>
             <div id="gmail-context" class="gmail-context hidden">
@@ -278,7 +246,7 @@ function getKanbanHTML() {
             </div>
           </div>
           <div class="editor-footer">
-            <button id="btn-delete-task" class="btn-delete" title="Supprimer la tâche">
+            <button id="btn-delete-task" class="btn-delete" title="Supprimer la t\xE2che">
               <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
@@ -290,138 +258,29 @@ function getKanbanHTML() {
 
     </main>
   </div>
-  `;
-}
-
-// ============================================================================
-// SECTION 3 : Intégration Gmail — Bouton Sidebar & Bouton Toolbar
-// ============================================================================
-
-/** Extrait les détails de l'e-mail actuellement ouvert */
-function getEmailDetails() {
-  const hash = window.location.hash;
-  const mailHashPattern = /#.+?\/([a-zA-Z0-9_-]{8,})/;
-  const match = hash.match(mailHashPattern);
-  if (match && match[1]) {
-    const threadId = match[1];
-    const subjectElement = document.querySelector(GMAIL_SUBJECT_SELECTOR);
-    const subject = subjectElement ? subjectElement.innerText.trim() : "E-mail sans objet";
-    return { title: subject, gmailId: threadId, gmailUrl: `https://mail.google.com/mail/u/0/#inbox/${threadId}` };
-  }
-  return null;
-}
-
-/** Injecte le bouton "Ajouter au Kanban" dans la barre d'outils de l'e-mail */
-function injectKanbanButton() {
-  const toolbars = document.querySelectorAll(GMAIL_TOOLBAR_SELECTOR);
-  if (toolbars.length === 0) return;
-
-  toolbars.forEach((toolbar) => {
-    // Vérifier si cette barre d'outils spécifique a déjà le bouton injecté
-    if (toolbar.querySelector(".gmail-kanban-trigger-class")) return;
-
-    const btnContainer = document.createElement("div");
-    btnContainer.className = "gmail-kanban-trigger-class J-J5-Ji";
-    btnContainer.title = "Ajouter au Tableau Kanban";
-    Object.assign(btnContainer.style, {
-      width: "36px",
-      height: "36px",
-      borderRadius: "50%",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      transition: "background-color 0.15s, transform 0.15s",
-      backgroundColor: "transparent",
-      marginLeft: "6px",
-      marginRight: "6px"
-    });
-    
-    btnContainer.innerHTML = `
+  `}function o(e){return v?v.getElementById(e):null}async function b(e,t="GET",n=null){if(!f)throw P(!1),new Error("Authentification requise.");return new Promise((a,s)=>{chrome.runtime.sendMessage({type:"API_PROXY",endpoint:e,method:t,body:n,token:f},i=>{if(chrome.runtime.lastError){l("error","Erreur comm."),s(new Error(chrome.runtime.lastError.message));return}if(!i||!i.success){if(i&&i.status===401){se(),s(new Error("Jeton expir\xE9. Veuillez vous reconnecter."));return}l("error","Erreur Sync"),s(new Error(i?i.error:"Pas de r\xE9ponse"));return}a(i.data)})})}function I(){g=!0;let e=document.querySelector("div[role='main']");if(!e)return;e.style.position="relative",Array.from(e.children).forEach(n=>{n.id!=="gmail-kanban-embed"&&(y.has(n)||y.set(n,n.style.display||""),n.style.display="none")});let t=document.getElementById("gmail-kanban-embed");if(t)t.parentNode!==e&&e.appendChild(t),t.style.display="block",C&&d&&D(d);else{t=document.createElement("div"),t.id="gmail-kanban-embed",Object.assign(t.style,{position:"absolute",inset:"0",zIndex:"9999",borderRadius:"16px",overflow:"hidden",display:"block"}),v=t.attachShadow({mode:"open"});let n=document.createElement("link");n.rel="stylesheet",n.href=chrome.runtime.getURL("kanban-embed.css"),v.appendChild(n);let a=document.createElement("div");a.innerHTML=he(),v.appendChild(a.firstElementChild),e.appendChild(t),n.addEventListener("load",()=>{C||(C=!0,ee())}),setTimeout(()=>{C||(C=!0,ee())},500)}K()}function M(){g=!1;let e=document.getElementById("gmail-kanban-embed");e&&(e.style.display="none"),y.forEach((t,n)=>{n&&n.parentElement&&(n.style.display=t)}),y.clear(),K()}function ae(){if(!g)return;let e=document.querySelector("div[role='main']");e&&Array.from(e.children).forEach(t=>{t.id!=="gmail-kanban-embed"&&(y.has(t)||y.set(t,t.style.display||""),t.style.display!=="none"&&(t.style.display="none"))})}function ee(){ve(),fe(),Le()}function ve(){o("tab-kanban").addEventListener("click",()=>R("kanban")),o("tab-smart").addEventListener("click",()=>R("smart")),o("board-select").addEventListener("change",t=>{d=t.target.value,chrome.storage.local.set({activeListId:d}),D(d)}),o("btn-add-todo").addEventListener("click",()=>V("todo")),o("btn-add-inprogress").addEventListener("click",()=>V("inprogress")),o("btn-add-done").addEventListener("click",()=>V("done")),o("btn-close-editor").addEventListener("click",q),o("btn-save-changes").addEventListener("click",ye),o("btn-delete-task").addEventListener("click",Ee),o("btn-login").addEventListener("click",()=>P(!0)),o("btn-logout").addEventListener("click",se),o("btn-fullscreen").addEventListener("click",()=>{chrome.tabs.create({url:chrome.runtime.getURL("sidepanel.html")})}),o("btn-close-toast").addEventListener("click",ie),o("btn-add-gmail-task").addEventListener("click",we),["todo","inprogress","done"].forEach(t=>{let n=o(`col-${t}-container`);n.addEventListener("dragover",a=>{a.preventDefault(),n.classList.add("drag-over-active")}),n.addEventListener("dragleave",()=>{n.classList.remove("drag-over-active")}),n.addEventListener("drop",a=>{a.preventDefault(),n.classList.remove("drag-over-active");let s=a.dataTransfer.getData("text/plain"),i=v.getElementById(s),c=o(`col-${t}`);i&&c&&i.parentElement!==c&&(c.appendChild(i),E(),ke(s,t))})}),chrome.runtime.onMessage.addListener(t=>{t.type==="EMAIL_CAPTURED"&&oe(t.data)}),chrome.storage.onChanged.addListener((t,n)=>{if(n==="local"&&d){let a=`kanban_tasks_cache_${d}`;if(t[a]){let s=t[a].newValue;if(s&&s.items){let i=Object.keys(u),c=s.items.map(m=>m.id);(i.length!==c.length||s.items.some(m=>{let p=u[m.id];return!p||p.columnId!==m.columnId||p.title!==m.title||p.desc!==m.desc}))&&(console.log("[Kanban] Mise \xE0 jour en temps r\xE9el d\xE9tect\xE9e depuis le cache"),x(s.items),navigator.onLine?l("connected","\xC0 jour (Synchro)"):l("offline","Hors-ligne (Cache)"))}}}});let e=o("extension-id-display");e&&(e.innerText=chrome.runtime.id)}async function fe(){l("connecting","Recherche de jeton..."),d=(await chrome.storage.local.get(["activeListId"])).activeListId||null,P(!1)}function P(e=!1){l("connecting","Authentification..."),chrome.runtime.sendMessage({type:"GET_TASKS_TOKEN",interactive:e},t=>{if(chrome.runtime.lastError){l("offline","Erreur extension");return}t&&t.success&&t.token?(f=t.token,o("setup-wizard").classList.add("hidden"),o("btn-logout").classList.remove("hidden"),l("connected","Connect\xE9"),be()):(f=null,o("setup-wizard").classList.remove("hidden"),o("btn-logout").classList.add("hidden"),l("offline","Non authentifi\xE9"))})}function se(){f&&chrome.runtime.sendMessage({type:"LOGOUT_USER",token:f},()=>{f=null,o("setup-wizard").classList.remove("hidden"),o("btn-logout").classList.add("hidden"),l("offline","D\xE9connect\xE9"),o("board-select").innerHTML='<option value="" disabled selected>Veuillez vous connecter</option>',O()})}function l(e,t){let n=o("sync-dot"),a=o("sync-text");!n||!a||(a.innerText=t,n.className="sync-dot "+e)}async function be(){l("connecting","Synchro listes...");try{let t=(await chrome.storage.local.get("kanban_lists_cache")).kanban_lists_cache;if(t&&Date.now()-t.timestamp<3e4){console.log("[Kanban] Utilisation du cache pour les listes"),U(t.items);return}}catch(e){console.warn("[Kanban] \xC9chec lecture cache listes :",e)}try{let e=await b("/users/@me/lists"),t=e&&e.items||[];await chrome.storage.local.set({kanban_lists_cache:{timestamp:Date.now(),items:t}}),U(t)}catch(e){console.error("[Kanban] Erreur r\xE9seau lors de la r\xE9cup\xE9ration des listes :",e);try{let a=(await chrome.storage.local.get("kanban_lists_cache")).kanban_lists_cache;if(a&&a.items){console.log("[Kanban] Fallback hors-ligne sur cache expir\xE9 pour les listes"),U(a.items,!0);return}}catch{}l("error","Erreur r\xE9seau");let t=o("board-select");t&&(t.innerHTML='<option value="" disabled>Erreur de connexion</option>')}}function U(e,t=!1){let n=o("board-select");n&&(n.innerHTML="",e.length>0?(e.forEach(a=>{let s=document.createElement("option");s.value=a.id,s.innerText=a.title+(t?" (hors-ligne)":""),n.appendChild(s)}),d&&Array.from(n.options).some(a=>a.value===d)?n.value=d:(d=e[0].id,n.value=d,chrome.storage.local.set({activeListId:d})),D(d),t&&l("offline","Hors-ligne (Cache)")):(n.innerHTML='<option value="" disabled>Aucun tableau trouv\xE9</option>',l("connected","Vide")))}async function D(e){if(!e)return;O(),S(!0),l("connecting","Chargement t\xE2ches...");let t=`kanban_tasks_cache_${e}`;try{let a=(await chrome.storage.local.get(t))[t];if(a&&Date.now()-a.timestamp<3e4){console.log("[Kanban] Utilisation du cache pour les t\xE2ches de",e),S(!1),x(a.items),navigator.onLine?l("connected","\xC0 jour (Cache)"):l("offline","Hors-ligne (Cache)");return}}catch(n){console.warn("[Kanban] \xC9chec lecture cache t\xE2ches :",n)}try{let n=await b(`/lists/${e}/tasks?showCompleted=true&showHidden=true`);S(!1);let a=n&&n.items||[],s=[];a.forEach(i=>{if(X(i))return;let{description:c,metadata:r}=Y(i.notes),m=r.columnId||"todo";i.status==="completed"&&(m="done");let p={id:i.id,title:i.title,desc:c,date:i.due?xe(i.due):"",displayDate:i.due?re(i.due):"",tags:r.tags||[],subtasks:r.subtasks||[],gmailId:r.gmailId,gmailSubject:r.gmailSubject,gmailUrl:r.gmailUrl,columnId:m,completed:i.status==="completed"};s.push(p)}),await chrome.storage.local.set({[t]:{timestamp:Date.now(),items:s}}),x(s),l("connected","\xC0 jour")}catch(n){console.error("[Kanban] Erreur de r\xE9cup\xE9ration des t\xE2ches :",n),S(!1);try{let s=(await chrome.storage.local.get(t))[t];if(s&&s.items){console.log("[Kanban] Fallback hors-ligne sur cache expir\xE9 pour les t\xE2ches"),x(s.items),l("offline","Hors-ligne (Cache)");return}}catch{}l("error","Erreur r\xE9seau")}}function x(e){O(),u={},e.forEach(t=>{u[t.id]=t,j(t)}),E()}function j(e){let t=o(`col-${e.columnId}`);if(!t)return;let n=document.createElement("div");n.id=e.id,n.draggable=!0,n.className="task-card";let a="";e.tags&&e.tags.length>0&&(a='<div class="card-tags">',e.tags.forEach(r=>{let m=r.toLowerCase()==="urgent"?"tag tag-urgent":"tag tag-default";a+=`<span class="${m}">${k(r)}</span>`}),a+="</div>");let s=e.completed?"card-title completed":"card-title",i=e.desc?`<p class="card-desc">${k(e.desc)}</p>`:"",c="";(e.displayDate||e.gmailUrl)&&(c='<div class="card-footer">',e.displayDate?c+=`<span class="card-date">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"></path>
+        </svg>
+        ${e.displayDate}
+      </span>`:c+="<span></span>",e.gmailUrl&&(c+=`<span class="card-gmail-badge">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        Gmail
+      </span>`),c+="</div>"),n.innerHTML=`${a}<h4 class="${s}">${k(e.title)}</h4>${i}${c}`,n.addEventListener("dragstart",r=>{r.dataTransfer.setData("text/plain",n.id),r.dataTransfer.effectAllowed="move",setTimeout(()=>n.classList.add("dragging"),0)}),n.addEventListener("dragend",()=>n.classList.remove("dragging")),n.addEventListener("click",()=>_(e.id)),t.appendChild(n)}async function ke(e,t){let n=u[e];if(!n)return;let a=n.columnId;if(!navigator.onLine){alert("Impossible de modifier la t\xE2che en mode hors-ligne. Veuillez r\xE9tablir votre connexion internet."),x(Object.values(u)),l("offline","Hors-ligne (Cache)");return}n.columnId=t;let s=t==="done";n.completed=s,l("connecting","Enregistrement...");try{let c={notes:L(n.desc,{columnId:t,tags:n.tags,subtasks:n.subtasks,gmailId:n.gmailId,gmailSubject:n.gmailSubject,gmailUrl:n.gmailUrl}),status:s?"completed":"needsAction"};s||(c.completed=null),await b(`/lists/${d}/tasks/${e}`,"PATCH",c);let r=v.getElementById(e);if(r){let p=r.querySelector("h4");p.className=s?"card-title completed":"card-title"}let m=`kanban_tasks_cache_${d}`;await chrome.storage.local.set({[m]:{timestamp:Date.now(),items:Object.values(u)}}),l("connected","D\xE9plac\xE9 !")}catch{n.columnId=a,n.completed=a==="done",D(d),l("error","Sync \xE9chec")}}async function V(e){if(!navigator.onLine){alert("Impossible d'ajouter une t\xE2che en mode hors-ligne."),l("offline","Hors-ligne (Cache)");return}l("connecting","Cr\xE9ation t\xE2che...");try{let n={title:"Nouvelle t\xE2che",notes:L("",{columnId:e,tags:[],subtasks:[]}),status:e==="done"?"completed":"needsAction"},a=await b(`/lists/${d}/tasks`,"POST",n),s={id:a.id,title:a.title,desc:"",date:"",displayDate:"",tags:[],subtasks:[],columnId:e,completed:e==="done"};u[s.id]=s,j(s),E();let i=`kanban_tasks_cache_${d}`;await chrome.storage.local.set({[i]:{timestamp:Date.now(),items:Object.values(u)}}),_(s.id),l("connected","Cr\xE9\xE9e !")}catch{l("error","\xC9chec cr\xE9ation")}}function _(e){let t=u[e];if(!t)return;o("edit-id").value=e,o("edit-title").value=t.title,o("edit-desc").value=t.desc,o("edit-date").value=t.date,o("edit-status").value=t.columnId,o("edit-tags").value=t.tags.join(", ");let n=o("gmail-context");t.gmailUrl?(n.classList.remove("hidden"),o("gmail-subject").innerText=t.gmailSubject,o("gmail-link").href=t.gmailUrl):n.classList.add("hidden"),o("editor-panel").classList.remove("hidden")}function q(){o("editor-panel").classList.add("hidden")}async function ye(){if(!navigator.onLine){alert("Impossible de modifier la t\xE2che en mode hors-ligne."),l("offline","Hors-ligne (Cache)");return}let e=o("edit-id").value,t=u[e];if(!t)return;let n=o("edit-title").value.trim()||"Sans titre",a=o("edit-desc").value,s=o("edit-date").value,i=o("edit-status").value,c=o("edit-tags").value,r=c?c.split(",").map(p=>p.trim()).filter(p=>p.length>0):[],m=i==="done";l("connecting","Sauvegarde...");try{let p=L(a,{columnId:i,tags:r,subtasks:t.subtasks,gmailId:t.gmailId,gmailSubject:t.gmailSubject,gmailUrl:t.gmailUrl}),F={title:n,notes:p,status:m?"completed":"needsAction",due:s?new Date(s).toISOString():null};m||(F.completed=null),await b(`/lists/${d}/tasks/${e}`,"PATCH",F),t.title=n,t.desc=a,t.date=s,t.displayDate=s?re(s):"",t.columnId=i,t.tags=r,t.completed=m;let J=v.getElementById(e);J&&J.remove(),j(t),E();let pe=`kanban_tasks_cache_${d}`;await chrome.storage.local.set({[pe]:{timestamp:Date.now(),items:Object.values(u)}}),q(),l("connected","Modifi\xE9e !")}catch{l("error","Sync \xE9chec")}}async function Ee(){if(!navigator.onLine){alert("Impossible de supprimer la t\xE2che en mode hors-ligne."),l("offline","Hors-ligne (Cache)");return}let e=o("edit-id").value;if(u[e]&&confirm("Voulez-vous vraiment supprimer d\xE9finitivement cette t\xE2che ?")){l("connecting","Suppression...");try{await b(`/lists/${d}/tasks/${e}`,"DELETE");let n=v.getElementById(e);n&&n.remove(),delete u[e],E();let a=`kanban_tasks_cache_${d}`;await chrome.storage.local.set({[a]:{timestamp:Date.now(),items:Object.values(u)}}),q(),l("connected","Supprim\xE9e")}catch{l("error","\xC9chec suppression")}}}function oe(e){h=e;let t=o("gmail-toast");t&&(o("gmail-toast-subject").innerText=e.title,t.classList.add("visible"))}function ie(){let e=o("gmail-toast");e&&(e.classList.remove("visible"),chrome.storage.local.remove("lastCapturedEmail").catch(()=>{}))}async function we(){if(!navigator.onLine){alert("Impossible de lier un e-mail en mode hors-ligne."),l("offline","Hors-ligne (Cache)");return}if(h){l("connecting","Liaison e-mail..."),ie(),chrome.storage.local.remove("lastCapturedEmail").catch(()=>{});try{let e=L("Consulter l'e-mail li\xE9 ci-dessous pour plus de d\xE9tails.",{columnId:"todo",tags:["Gmail"],subtasks:[],gmailId:h.gmailId,gmailSubject:h.title,gmailUrl:h.gmailUrl}),t={title:h.title,notes:e,status:"needsAction"},n=await b(`/lists/${d}/tasks`,"POST",t),a={id:n.id,title:n.title,desc:"Consulter l'e-mail li\xE9 ci-dessous pour plus de d\xE9tails.",date:"",displayDate:"",tags:["Gmail"],subtasks:[],gmailId:h.gmailId,gmailSubject:h.title,gmailUrl:h.gmailUrl,columnId:"todo",completed:!1};u[a.id]=a,j(a),E();let s=`kanban_tasks_cache_${d}`;await chrome.storage.local.set({[s]:{timestamp:Date.now(),items:Object.values(u)}}),_(a.id),l("connected","Li\xE9 !")}catch{l("error","\xC9chec liaison")}h=null}}async function Le(){try{let e=await chrome.storage.local.get(["lastCapturedEmail"]);e.lastCapturedEmail&&oe(e.lastCapturedEmail)}catch(e){console.error("Erreur lors du d\xE9codage de l'e-mail stock\xE9 :",e)}}function R(e){let t=o("tab-kanban"),n=o("tab-smart"),a=o("view-kanban"),s=o("view-smart");e==="kanban"?(t.classList.add("active"),n.classList.remove("active"),a.classList.remove("hidden"),s.classList.add("hidden")):(n.classList.add("active"),t.classList.remove("active"),a.classList.add("hidden"),s.classList.remove("hidden"),Ce())}function Ce(){let e=o("smart-today"),t=o("smart-week");e.innerHTML="",t.innerHTML="";let n=ne(new Date),a=new Date;a.setDate(a.getDate()+7);let s=ne(a),i=0,c=0;Object.values(u).forEach(r=>{r.completed||!r.date||(r.date===n?(te(r,e),i++):r.date>n&&r.date<=s&&(te(r,t),c++))}),i===0&&(e.innerHTML=`<p class="smart-empty">Aucune t\xE2che planifi\xE9e pour aujourd'hui.</p>`),c===0&&(t.innerHTML='<p class="smart-empty">Aucune t\xE2che planifi\xE9e pour cette semaine.</p>')}function te(e,t){let n=document.createElement("div");n.className="smart-card";let a="";e.tags&&e.tags.length>0&&(a='<div class="card-tags">',e.tags.forEach(s=>{let i=s.toLowerCase()==="urgent"?"tag tag-urgent":"tag tag-default";a+=`<span class="${i}">${k(s)}</span>`}),a+="</div>"),n.innerHTML=`
+    ${a}
+    <h4 class="card-title">${k(e.title)}</h4>
+    ${e.desc?`<p class="card-desc" style="-webkit-line-clamp:1;">${k(e.desc)}</p>`:""}
+    <div class="smart-card-footer">
+      <span class="smart-date-badge">${e.displayDate}</span>
+      <span class="smart-column-badge">${e.columnId==="inprogress"?"En cours":"\xC0 faire"}</span>
+    </div>
+  `,n.addEventListener("click",()=>{R("kanban"),setTimeout(()=>_(e.id),150)}),t.appendChild(n)}function O(){["todo","inprogress","done"].forEach(e=>{let t=o(`col-${e}`);t&&(t.innerHTML="")})}function S(e){["todo","inprogress","done"].forEach(t=>{let n=o(`skeleton-${t}`);n&&(e?n.classList.remove("hidden"):n.classList.add("hidden"))})}function E(){["todo","inprogress","done"].forEach(e=>{let t=o(`col-${e}`),n=o(`badge-${e}`);t&&n&&(n.innerText=t.children.length)})}function k(e){return e?e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"):""}function re(e){return e?new Date(e).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):""}function xe(e){return e?new Date(e).toISOString().split("T")[0]:""}function ne(e){let t=e.getTimezoneOffset();return new Date(e.getTime()-t*60*1e3).toISOString().split("T")[0]}var g,v,C,y,f,d,u,h,B=T(()=>{Q();H();g=!1,v=null,C=!1,y=new Map,f=null,d=null,u={},h=null});function G(){let e=window.location.hash,t=/#.+?\/([a-zA-Z0-9_-]{8,})/,n=e.match(t);if(n&&n[1]){let a=n[1],s=document.querySelector(Te);return{title:s?s.innerText.trim():"E-mail sans objet",gmailId:a,gmailUrl:`https://mail.google.com/mail/u/0/#inbox/${a}`}}return null}function le(){let e=document.querySelectorAll(Ae);e.length!==0&&e.forEach(t=>{if(t.querySelector(".gmail-kanban-trigger-class"))return;let n=document.createElement("div");n.className="gmail-kanban-trigger-class J-J5-Ji",n.title="Ajouter au Tableau Kanban",Object.assign(n.style,{width:"36px",height:"36px",borderRadius:"50%",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"background-color 0.15s, transform 0.15s",backgroundColor:"transparent",marginLeft:"6px",marginRight:"6px"}),n.innerHTML=`
       <svg fill="none" stroke="#444746" stroke-width="2.2" viewBox="0 0 24 24" style="width:20px;height:20px;transition:stroke 0.15s, transform 0.15s;" class="kanban-trigger-svg">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path>
       </svg>
-    `;
-
-    // Effets de survol
-    btnContainer.addEventListener("mouseenter", () => {
-      const svg = btnContainer.querySelector(".kanban-trigger-svg");
-      if (btnContainer.style.backgroundColor !== "rgb(194, 231, 255)") { // Si pas déjà dans l'état bleu "Ajouté"
-        btnContainer.style.backgroundColor = "rgba(0, 0, 0, 0.06)";
-        if (svg) svg.setAttribute("stroke", "#1f1f1f");
-      }
-    });
-
-    btnContainer.addEventListener("mouseleave", () => {
-      const svg = btnContainer.querySelector(".kanban-trigger-svg");
-      if (btnContainer.style.backgroundColor !== "rgb(194, 231, 255)") { // Si pas déjà dans l'état bleu "Ajouté"
-        btnContainer.style.backgroundColor = "transparent";
-        if (svg) svg.setAttribute("stroke", "#444746");
-      }
-    });
-
-    // Événement clic
-    btnContainer.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const emailDetails = getEmailDetails();
-      if (emailDetails) {
-        chrome.runtime.sendMessage({ type: "EMAIL_CAPTURED", data: emailDetails }, (response) => {
-          if (!chrome.runtime.lastError) {
-            const svg = btnContainer.querySelector(".kanban-trigger-svg");
-            
-            // Animation de confirmation "Ajouté !" (devient bleu avec un léger zoom de l'icône)
-            btnContainer.style.backgroundColor = "#c2e7ff";
-            btnContainer.title = "Ajouté au Kanban !";
-            if (svg) {
-              svg.setAttribute("stroke", "#0b57d0");
-              svg.style.transform = "scale(1.15)";
-            }
-
-            setTimeout(() => {
-              btnContainer.style.backgroundColor = "transparent";
-              btnContainer.title = "Ajouter au Tableau Kanban";
-              if (svg) {
-                svg.setAttribute("stroke", "#444746");
-                svg.style.transform = "scale(1)";
-              }
-            }, 2000);
-
-            // Si le Kanban est déjà affiché, montrer le toast directement
-            if (kanbanShadowRoot && isKanbanActive) {
-              showGmailToast(emailDetails);
-            }
-          }
-        });
-      }
-    });
-
-    // Insérer de manière sécurisée en premier enfant de la barre d'outils
-    toolbar.insertBefore(btnContainer, toolbar.firstChild);
-  });
-}
-
-/** Injecte le menu "Tableau Kanban" dans la navigation latérale gauche de Gmail */
-function injectSidebarButton() {
-  const ajlContainer = document.querySelector(".ajl") || document.querySelector(".TK");
-  if (!ajlContainer) return;
-  const parent = ajlContainer.parentNode;
-  if (!parent) return;
-
-  // Si le bouton est déjà présent comme frère du conteneur, on ne fait rien
-  if (parent.querySelector("#gmail-sidebar-kanban")) return;
-
-  // Nettoyer d'éventuels doublons orphelins dans d'autres conteneurs obsolètes
-  const oldButton = document.getElementById("gmail-sidebar-kanban");
-  if (oldButton) {
-    oldButton.remove();
-  }
-
-  const item = document.createElement("div");
-  item.id = "gmail-sidebar-kanban";
-  item.className = "aim";
-  item.style.marginBottom = "4px"; // Espacement propre avec la liste .ajl
-  item.innerHTML = `
+    `,n.addEventListener("mouseenter",()=>{let a=n.querySelector(".kanban-trigger-svg");n.style.backgroundColor!=="rgb(194, 231, 255)"&&(n.style.backgroundColor="rgba(0, 0, 0, 0.06)",a&&a.setAttribute("stroke","#1f1f1f"))}),n.addEventListener("mouseleave",()=>{let a=n.querySelector(".kanban-trigger-svg");n.style.backgroundColor!=="rgb(194, 231, 255)"&&(n.style.backgroundColor="transparent",a&&a.setAttribute("stroke","#444746"))}),n.addEventListener("click",a=>{a.preventDefault(),a.stopPropagation();let s=G();s&&chrome.runtime.sendMessage({type:"EMAIL_CAPTURED",data:s},i=>{if(!chrome.runtime.lastError){let c=n.querySelector(".kanban-trigger-svg");n.style.backgroundColor="#c2e7ff",n.title="Ajout\xE9 au Kanban !",c&&(c.setAttribute("stroke","#0b57d0"),c.style.transform="scale(1.15)"),setTimeout(()=>{n.style.backgroundColor="transparent",n.title="Ajouter au Tableau Kanban",c&&(c.setAttribute("stroke","#444746"),c.style.transform="scale(1)")},2e3)}})}),t.insertBefore(n,t.firstChild)})}function $(){let e=document.querySelector(".ajl")||document.querySelector(".TK");if(!e)return;let t=e.parentNode;if(!t||t.querySelector("#gmail-sidebar-kanban"))return;let n=document.getElementById("gmail-sidebar-kanban");n&&n.remove();let a=document.createElement("div");a.id="gmail-sidebar-kanban",a.className="aim",a.style.marginBottom="4px",a.innerHTML=`
     <div class="TO" style="user-select:none;">
       <div>
         <a class="J-Ke n0" id="gmail-sidebar-kanban-link" href="#" title="Ouvrir le Tableau Kanban Tasks" style="display:flex;align-items:center;gap:12px;padding-left:26px;height:32px;color:#444746;font-family:'Google Sans',Roboto,sans-serif;font-size:14px;font-weight:500;text-decoration:none;border-radius:0 16px 16px 0;margin-right:8px;transition:background-color 0.15s;">
@@ -432,1127 +291,4 @@ function injectSidebarButton() {
         </a>
       </div>
     </div>
-  `;
-  // On insère le bouton en tant que frère juste au-dessus du bloc complet de la liste des dossiers de Gmail (.ajl).
-  // Ainsi, le Tableau Kanban n'est plus du tout vu par le moteur de rendu dynamique de la liste de Gmail,
-  // ce qui résout à 100% le problème de duplication/triplement des dossiers lors des mises à jour d'unread count !
-  parent.insertBefore(item, ajlContainer);
-
-  const link = item.querySelector("a");
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Évite que le clic ne remonte et ne perturbe le routeur/menu Gmail
-    showKanban();
-  });
-
-  link.addEventListener("mouseenter", () => {
-    if (!isKanbanActive) link.style.backgroundColor = "rgba(0,0,0,0.04)";
-  });
-  link.addEventListener("mouseleave", () => {
-    if (!isKanbanActive) link.style.backgroundColor = "transparent";
-  });
-
-  updateSidebarButtonStyle();
-}
-
-/** Met à jour le style visuel actif/inactif du bouton de la barre latérale */
-function updateSidebarButtonStyle() {
-  const item = document.getElementById("gmail-sidebar-kanban");
-  if (!item) return;
-  const link = item.querySelector("a");
-  const icon = item.querySelector("#sidebar-kanban-icon");
-  const text = item.querySelector("#sidebar-kanban-text");
-  if (!link || !icon || !text) return;
-
-  if (isKanbanActive) {
-    link.style.backgroundColor = "#c2e7ff";
-    link.style.color = "#041e49";
-    icon.setAttribute("stroke", "#0b57d0");
-    text.style.color = "#041e49";
-    text.style.fontWeight = "700";
-  } else {
-    link.style.backgroundColor = "transparent";
-    link.style.color = "#444746";
-    icon.setAttribute("stroke", "#444746");
-    text.style.color = "#444746";
-    text.style.fontWeight = "500";
-  }
-}
-
-// ============================================================================
-// SECTION 4 : Contrôle de l'Affichage & Shadow DOM
-// ============================================================================
-
-/** Affiche l'interface Kanban intégrée en masquant la zone principale de Gmail */
-function showKanban() {
-  isKanbanActive = true;
-  const mainPane = document.querySelector("div[role='main']");
-  if (!mainPane) return;
-
-  mainPane.style.position = "relative";
-
-  // Masquer les enfants existants de Gmail
-  Array.from(mainPane.children).forEach(child => {
-    if (child.id !== "gmail-kanban-embed") {
-      if (!originalDisplayStates.has(child)) {
-        originalDisplayStates.set(child, child.style.display || "");
-      }
-      child.style.display = "none";
-    }
-  });
-
-  // Créer ou afficher le conteneur Shadow DOM
-  let embedContainer = document.getElementById("gmail-kanban-embed");
-  if (!embedContainer) {
-    embedContainer = document.createElement("div");
-    embedContainer.id = "gmail-kanban-embed";
-    Object.assign(embedContainer.style, {
-      position: "absolute",
-      inset: "0",
-      zIndex: "9999",
-      borderRadius: "16px",
-      overflow: "hidden",
-      display: "block"
-    });
-
-    kanbanShadowRoot = embedContainer.attachShadow({ mode: "open" });
-
-    // Charger le CSS autonome
-    const linkEl = document.createElement("link");
-    linkEl.rel = "stylesheet";
-    linkEl.href = chrome.runtime.getURL("kanban-embed.css");
-    kanbanShadowRoot.appendChild(linkEl);
-
-    // Injecter le template HTML
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = getKanbanHTML();
-    kanbanShadowRoot.appendChild(wrapper.firstElementChild);
-
-    mainPane.appendChild(embedContainer);
-
-    // Initialiser une fois le CSS chargé
-    linkEl.addEventListener("load", () => {
-      if (!kanbanInitialized) {
-        kanbanInitialized = true;
-        initKanbanApp();
-      }
-    });
-    setTimeout(() => {
-      if (!kanbanInitialized) {
-        kanbanInitialized = true;
-        initKanbanApp();
-      }
-    }, 500);
-  } else {
-    if (embedContainer.parentNode !== mainPane) {
-      mainPane.appendChild(embedContainer);
-    }
-    embedContainer.style.display = "block";
-    // Rafraîchir les tâches si déjà initialisé
-    if (kanbanInitialized && activeListId) {
-      loadTasks(activeListId);
-    }
-  }
-
-  updateSidebarButtonStyle();
-}
-
-/** Masque l'interface Kanban et restaure la vue standard de Gmail */
-function hideKanban() {
-  isKanbanActive = false;
-  const embedContainer = document.getElementById("gmail-kanban-embed");
-  if (embedContainer) {
-    embedContainer.style.display = "none";
-  }
-
-  // Restaurer le display d'origine des éléments Gmail
-  originalDisplayStates.forEach((display, child) => {
-    if (child && child.parentElement) {
-      child.style.display = display;
-    }
-  });
-  originalDisplayStates.clear();
-
-  updateSidebarButtonStyle();
-}
-
-/** Synchronise la visibilité : s'assure que les nouveaux éléments ajoutés par Gmail restent masqués si le Kanban est ouvert */
-function syncKanbanVisibility() {
-  if (!isKanbanActive) return;
-  const mainPane = document.querySelector("div[role='main']");
-  if (!mainPane) return;
-
-  Array.from(mainPane.children).forEach(child => {
-    if (child.id !== "gmail-kanban-embed") {
-      if (!originalDisplayStates.has(child)) {
-        originalDisplayStates.set(child, child.style.display || "");
-      }
-      if (child.style.display !== "none") {
-        child.style.display = "none";
-      }
-    }
-  });
-}
-
-// ============================================================================
-// SECTION 5 : Logique de l'Application Kanban
-// ============================================================================
-
-/** Raccourci pour accéder aux éléments dans le Shadow DOM */
-function $(id) {
-  return kanbanShadowRoot.getElementById(id);
-}
-
-/** Appel API via le proxy background.js */
-async function apiCall(endpoint, method = "GET", body = null) {
-  if (!authToken) {
-    authenticate(false);
-    throw new Error("Authentification requise.");
-  }
-
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({
-      type: "API_PROXY",
-      endpoint,
-      method,
-      body,
-      token: authToken
-    }, (response) => {
-      if (chrome.runtime.lastError) {
-        setSyncStatus("error", "Erreur comm.");
-        reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
-      if (!response || !response.success) {
-        if (response && response.status === 401) {
-          logout();
-          reject(new Error("Jeton expiré. Veuillez vous reconnecter."));
-          return;
-        }
-        setSyncStatus("error", "Erreur Sync");
-        reject(new Error(response ? response.error : "Pas de réponse"));
-        return;
-      }
-      resolve(response.data);
-    });
-  });
-}
-
-/** Initialise l'application Kanban dans le Shadow DOM */
-function initKanbanApp() {
-  setupKanbanEventListeners();
-  initAuth();
-  checkLastCapturedEmail();
-}
-
-/** Configure tous les écouteurs d'événements */
-function setupKanbanEventListeners() {
-  // Onglets
-  $("tab-kanban").addEventListener("click", () => switchTab("kanban"));
-  $("tab-smart").addEventListener("click", () => switchTab("smart"));
-
-  // Sélecteur de board
-  $("board-select").addEventListener("change", (e) => {
-    activeListId = e.target.value;
-    chrome.storage.local.set({ activeListId });
-    loadTasks(activeListId);
-  });
-
-  // Boutons d'ajout rapide
-  $("btn-add-todo").addEventListener("click", () => triggerAddNewTask("todo"));
-  $("btn-add-inprogress").addEventListener("click", () => triggerAddNewTask("inprogress"));
-  $("btn-add-done").addEventListener("click", () => triggerAddNewTask("done"));
-
-  // Éditeur
-  $("btn-close-editor").addEventListener("click", closeEditor);
-  $("btn-save-changes").addEventListener("click", saveChanges);
-  $("btn-delete-task").addEventListener("click", triggerDeleteTask);
-
-  // Auth
-  $("btn-login").addEventListener("click", () => authenticate(true));
-  $("btn-logout").addEventListener("click", logout);
-
-  // Plein écran (nouvel onglet)
-  $("btn-fullscreen").addEventListener("click", () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel.html") });
-  });
-
-  // Toast Gmail
-  $("btn-close-toast").addEventListener("click", hideGmailToast);
-  $("btn-add-gmail-task").addEventListener("click", openEditorWithCapturedEmail);
-
-  // Drag & Drop sur les conteneurs de colonnes
-  ["todo", "inprogress", "done"].forEach(columnId => {
-    const container = $(`col-${columnId}-container`);
-    container.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      container.classList.add("drag-over-active");
-    });
-    container.addEventListener("dragleave", () => {
-      container.classList.remove("drag-over-active");
-    });
-    container.addEventListener("drop", (e) => {
-      e.preventDefault();
-      container.classList.remove("drag-over-active");
-      const cardId = e.dataTransfer.getData("text/plain");
-      const cardElement = kanbanShadowRoot.getElementById(cardId);
-      const targetList = $(`col-${columnId}`);
-      if (cardElement && targetList && cardElement.parentElement !== targetList) {
-        targetList.appendChild(cardElement);
-        updateBadges();
-        handleTaskColumnMove(cardId, columnId);
-      }
-    });
-  });
-
-  // Écoute des messages venant de background.js
-  chrome.runtime.onMessage.addListener((message) => {
-    if (message.type === "EMAIL_CAPTURED") {
-      showGmailToast(message.data);
-    }
-  });
-
-  // Écoute des changements de cache en temps réel (pour synchronisation inter-contextes)
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && activeListId) {
-      const cacheKey = `kanban_tasks_cache_${activeListId}`;
-      if (changes[cacheKey]) {
-        const newCache = changes[cacheKey].newValue;
-        if (newCache && newCache.items) {
-          const localKeys = Object.keys(allTasks);
-          const incomingIds = newCache.items.map(t => t.id);
-          
-          const hasChanges = localKeys.length !== incomingIds.length || 
-            newCache.items.some(t => {
-              const local = allTasks[t.id];
-              return !local || local.columnId !== t.columnId || local.title !== t.title || local.desc !== t.desc;
-            });
-            
-          if (hasChanges) {
-            console.log("[Kanban] Mise à jour en temps réel détectée depuis le cache");
-            renderTasksFromData(newCache.items);
-            if (!navigator.onLine) {
-              setSyncStatus("offline", "Hors-ligne (Cache)");
-            } else {
-              setSyncStatus("connected", "À jour (Synchro)");
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // Affichage de l'ID d'extension
-  const displayIdEl = $("extension-id-display");
-  if (displayIdEl) displayIdEl.innerText = chrome.runtime.id;
-}
-
-// --- Auth ---
-async function initAuth() {
-  setSyncStatus("connecting", "Recherche de jeton...");
-  const storage = await chrome.storage.local.get(["activeListId"]);
-  activeListId = storage.activeListId || null;
-  authenticate(false);
-}
-
-function authenticate(interactive = false) {
-  setSyncStatus("connecting", "Authentification...");
-  chrome.runtime.sendMessage({ type: "GET_TASKS_TOKEN", interactive }, (response) => {
-    if (chrome.runtime.lastError) {
-      setSyncStatus("offline", "Erreur extension");
-      return;
-    }
-    if (response && response.success && response.token) {
-      authToken = response.token;
-      $("setup-wizard").classList.add("hidden");
-      $("btn-logout").classList.remove("hidden");
-      setSyncStatus("connected", "Connecté");
-      loadBoards();
-    } else {
-      authToken = null;
-      $("setup-wizard").classList.remove("hidden");
-      $("btn-logout").classList.add("hidden");
-      setSyncStatus("offline", "Non authentifié");
-    }
-  });
-}
-
-function logout() {
-  if (!authToken) return;
-  chrome.runtime.sendMessage({ type: "LOGOUT_USER", token: authToken }, () => {
-    authToken = null;
-    $("setup-wizard").classList.remove("hidden");
-    $("btn-logout").classList.add("hidden");
-    setSyncStatus("offline", "Déconnecté");
-    $("board-select").innerHTML = '<option value="" disabled selected>Veuillez vous connecter</option>';
-    clearColumns();
-  });
-}
-
-// --- Sync Status ---
-function setSyncStatus(state, text) {
-  const dot = $("sync-dot");
-  const label = $("sync-text");
-  if (!dot || !label) return;
-  label.innerText = text;
-  dot.className = "sync-dot " + state;
-}
-
-// --- Chargement des Boards ---
-async function loadBoards() {
-  setSyncStatus("connecting", "Synchro listes...");
-  
-  try {
-    // 1. Chercher dans le cache
-    const cache = await chrome.storage.local.get("kanban_lists_cache");
-    const cachedData = cache.kanban_lists_cache;
-    
-    if (cachedData && Date.now() - cachedData.timestamp < 30000) {
-      console.log("[Kanban] Utilisation du cache pour les listes");
-      renderBoards(cachedData.items);
-      return;
-    }
-  } catch (err) {
-    console.warn("[Kanban] Échec lecture cache listes :", err);
-  }
-
-  // 2. Fetch de l'API si le cache est absent/expiré
-  try {
-    const data = await apiCall("/users/@me/lists");
-    const items = (data && data.items) || [];
-    
-    // Mettre en cache
-    await chrome.storage.local.set({
-      kanban_lists_cache: {
-        timestamp: Date.now(),
-        items
-      }
-    });
-    
-    renderBoards(items);
-  } catch (error) {
-    console.error("[Kanban] Erreur réseau lors de la récupération des listes :", error);
-    
-    // Fallback hors-ligne : tenter de charger le cache expiré
-    try {
-      const cache = await chrome.storage.local.get("kanban_lists_cache");
-      const cachedData = cache.kanban_lists_cache;
-      if (cachedData && cachedData.items) {
-        console.log("[Kanban] Fallback hors-ligne sur cache expiré pour les listes");
-        renderBoards(cachedData.items, true);
-        return;
-      }
-    } catch (e) {}
-    
-    setSyncStatus("error", "Erreur réseau");
-    const boardSelect = $("board-select");
-    if (boardSelect) boardSelect.innerHTML = '<option value="" disabled>Erreur de connexion</option>';
-  }
-}
-
-// Fonction auxiliaire pour dessiner les listes
-function renderBoards(items, isOffline = false) {
-  const boardSelect = $("board-select");
-  if (!boardSelect) return;
-  boardSelect.innerHTML = "";
-
-  if (items.length > 0) {
-    items.forEach(list => {
-      const option = document.createElement("option");
-      option.value = list.id;
-      option.innerText = list.title + (isOffline ? " (hors-ligne)" : "");
-      boardSelect.appendChild(option);
-    });
-
-    if (activeListId && Array.from(boardSelect.options).some(opt => opt.value === activeListId)) {
-      boardSelect.value = activeListId;
-    } else {
-      activeListId = items[0].id;
-      boardSelect.value = activeListId;
-      chrome.storage.local.set({ activeListId });
-    }
-    loadTasks(activeListId);
-    if (isOffline) {
-      setSyncStatus("offline", "Hors-ligne (Cache)");
-    }
-  } else {
-    boardSelect.innerHTML = '<option value="" disabled>Aucun tableau trouvé</option>';
-    setSyncStatus("connected", "Vide");
-  }
-}
-
-// --- Chargement des Tâches ---
-async function loadTasks(listId) {
-  if (!listId) return;
-  clearColumns();
-  toggleSkeletons(true);
-  setSyncStatus("connecting", "Chargement tâches...");
-
-  const cacheKey = `kanban_tasks_cache_${listId}`;
-  
-  try {
-    // 1. Chercher dans le cache
-    const cache = await chrome.storage.local.get(cacheKey);
-    const cachedData = cache[cacheKey];
-    
-    if (cachedData && Date.now() - cachedData.timestamp < 30000) {
-      console.log("[Kanban] Utilisation du cache pour les tâches de", listId);
-      toggleSkeletons(false);
-      renderTasksFromData(cachedData.items);
-      if (!navigator.onLine) {
-        setSyncStatus("offline", "Hors-ligne (Cache)");
-      } else {
-        setSyncStatus("connected", "À jour (Cache)");
-      }
-      return;
-    }
-  } catch (err) {
-    console.warn("[Kanban] Échec lecture cache tâches :", err);
-  }
-
-  // 2. Fetch de l'API si le cache est absent/expiré
-  try {
-    const data = await apiCall(`/lists/${listId}/tasks?showCompleted=true&showHidden=true`);
-    toggleSkeletons(false);
-    
-    const taskItems = (data && data.items) || [];
-    const formattedTasks = [];
-
-    taskItems.forEach(rawTask => {
-      if (isConfigTask(rawTask)) return;
-      const { description, metadata } = parseTaskNotes(rawTask.notes);
-      let columnId = metadata.columnId || "todo";
-      if (rawTask.status === "completed") columnId = "done";
-
-      const task = {
-        id: rawTask.id, title: rawTask.title, desc: description,
-        date: rawTask.due ? formatDateForInput(rawTask.due) : "",
-        displayDate: rawTask.due ? formatDateFriendly(rawTask.due) : "",
-        tags: metadata.tags || [], subtasks: metadata.subtasks || [],
-        gmailId: metadata.gmailId, gmailSubject: metadata.gmailSubject,
-        gmailUrl: metadata.gmailUrl, columnId,
-        completed: rawTask.status === "completed"
-      };
-      formattedTasks.push(task);
-    });
-
-    // Mettre en cache
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: formattedTasks
-      }
-    });
-
-    renderTasksFromData(formattedTasks);
-    setSyncStatus("connected", "À jour");
-  } catch (error) {
-    console.error("[Kanban] Erreur de récupération des tâches :", error);
-    toggleSkeletons(false);
-
-    // Fallback hors-ligne : tenter de charger le cache expiré
-    try {
-      const cache = await chrome.storage.local.get(cacheKey);
-      const cachedData = cache[cacheKey];
-      if (cachedData && cachedData.items) {
-        console.log("[Kanban] Fallback hors-ligne sur cache expiré pour les tâches");
-        renderTasksFromData(cachedData.items);
-        setSyncStatus("offline", "Hors-ligne (Cache)");
-        return;
-      }
-    } catch (e) {}
-
-    setSyncStatus("error", "Erreur réseau");
-  }
-}
-
-// Fonction auxiliaire pour dessiner les tâches à partir de données pré-formattées
-function renderTasksFromData(tasks) {
-  clearColumns();
-  allTasks = {};
-  tasks.forEach(task => {
-    allTasks[task.id] = task;
-    renderTaskCard(task);
-  });
-  updateBadges();
-}
-
-// --- Rendu des Cartes ---
-function renderTaskCard(task) {
-  const targetCol = $(`col-${task.columnId}`);
-  if (!targetCol) return;
-
-  const card = document.createElement("div");
-  card.id = task.id;
-  card.draggable = true;
-  card.className = "task-card";
-
-  // Tags
-  let tagsHtml = "";
-  if (task.tags && task.tags.length > 0) {
-    tagsHtml = `<div class="card-tags">`;
-    task.tags.forEach(tag => {
-      const cls = tag.toLowerCase() === "urgent" ? "tag tag-urgent" : "tag tag-default";
-      tagsHtml += `<span class="${cls}">${escapeHtml(tag)}</span>`;
-    });
-    tagsHtml += `</div>`;
-  }
-
-  // Titre
-  const titleClass = task.completed ? "card-title completed" : "card-title";
-
-  // Description
-  const descHtml = task.desc ? `<p class="card-desc">${escapeHtml(task.desc)}</p>` : "";
-
-  // Pied
-  let footerHtml = "";
-  if (task.displayDate || task.gmailUrl) {
-    footerHtml = `<div class="card-footer">`;
-    if (task.displayDate) {
-      footerHtml += `<span class="card-date">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"></path>
-        </svg>
-        ${task.displayDate}
-      </span>`;
-    } else {
-      footerHtml += `<span></span>`;
-    }
-    if (task.gmailUrl) {
-      footerHtml += `<span class="card-gmail-badge">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-        </svg>
-        Gmail
-      </span>`;
-    }
-    footerHtml += `</div>`;
-  }
-
-  card.innerHTML = `${tagsHtml}<h4 class="${titleClass}">${escapeHtml(task.title)}</h4>${descHtml}${footerHtml}`;
-
-  // Drag & Drop
-  card.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", card.id);
-    e.dataTransfer.effectAllowed = "move";
-    setTimeout(() => card.classList.add("dragging"), 0);
-  });
-  card.addEventListener("dragend", () => card.classList.remove("dragging"));
-
-  // Clic éditeur
-  card.addEventListener("click", () => openEditor(task.id));
-
-  targetCol.appendChild(card);
-}
-
-// --- Drag & Drop Persistance ---
-async function handleTaskColumnMove(taskId, columnId) {
-  const task = allTasks[taskId];
-  if (!task) return;
-  const previousColumn = task.columnId;
-  
-  if (!navigator.onLine) {
-    alert("Impossible de modifier la tâche en mode hors-ligne. Veuillez rétablir votre connexion internet.");
-    renderTasksFromData(Object.values(allTasks));
-    setSyncStatus("offline", "Hors-ligne (Cache)");
-    return;
-  }
-
-  task.columnId = columnId;
-  const makeCompleted = (columnId === "done");
-  task.completed = makeCompleted;
-  setSyncStatus("connecting", "Enregistrement...");
-
-  try {
-    const rawNotes = serializeTaskNotes(task.desc, {
-      columnId, tags: task.tags, subtasks: task.subtasks,
-      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl
-    });
-    const body = { notes: rawNotes, status: makeCompleted ? "completed" : "needsAction" };
-    if (!makeCompleted) body.completed = null;
-    await apiCall(`/lists/${activeListId}/tasks/${taskId}`, "PATCH", body);
-
-    const cardEl = kanbanShadowRoot.getElementById(taskId);
-    if (cardEl) {
-      const h4 = cardEl.querySelector("h4");
-      h4.className = makeCompleted ? "card-title completed" : "card-title";
-    }
-
-    // Mettre à jour le cache local
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    setSyncStatus("connected", "Déplacé !");
-  } catch (error) {
-    task.columnId = previousColumn;
-    task.completed = (previousColumn === "done");
-    loadTasks(activeListId);
-    setSyncStatus("error", "Sync échec");
-  }
-}
-
-// --- Ajout de tâche ---
-async function triggerAddNewTask(columnId) {
-  if (!navigator.onLine) {
-    alert("Impossible d'ajouter une tâche en mode hors-ligne.");
-    setSyncStatus("offline", "Hors-ligne (Cache)");
-    return;
-  }
-  
-  setSyncStatus("connecting", "Création tâche...");
-  try {
-    const rawNotes = serializeTaskNotes("", { columnId, tags: [], subtasks: [] });
-    const body = {
-      title: "Nouvelle tâche", notes: rawNotes,
-      status: columnId === "done" ? "completed" : "needsAction"
-    };
-    const createdRawTask = await apiCall(`/lists/${activeListId}/tasks`, "POST", body);
-    const task = {
-      id: createdRawTask.id, title: createdRawTask.title, desc: "",
-      date: "", displayDate: "", tags: [], subtasks: [],
-      columnId, completed: columnId === "done"
-    };
-    allTasks[task.id] = task;
-    renderTaskCard(task);
-    updateBadges();
-
-    // Mettre à jour le cache local
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    openEditor(task.id);
-    setSyncStatus("connected", "Créée !");
-  } catch (error) {
-    setSyncStatus("error", "Échec création");
-  }
-}
-
-// --- Éditeur ---
-function openEditor(taskId) {
-  const task = allTasks[taskId];
-  if (!task) return;
-  $("edit-id").value = taskId;
-  $("edit-title").value = task.title;
-  $("edit-desc").value = task.desc;
-  $("edit-date").value = task.date;
-  $("edit-status").value = task.columnId;
-  $("edit-tags").value = task.tags.join(", ");
-
-  const gmailContext = $("gmail-context");
-  if (task.gmailUrl) {
-    gmailContext.classList.remove("hidden");
-    $("gmail-subject").innerText = task.gmailSubject;
-    $("gmail-link").href = task.gmailUrl;
-  } else {
-    gmailContext.classList.add("hidden");
-  }
-  $("editor-panel").classList.remove("hidden");
-}
-
-function closeEditor() {
-  $("editor-panel").classList.add("hidden");
-}
-
-async function saveChanges() {
-  if (!navigator.onLine) {
-    alert("Impossible de modifier la tâche en mode hors-ligne.");
-    setSyncStatus("offline", "Hors-ligne (Cache)");
-    return;
-  }
-
-  const taskId = $("edit-id").value;
-  const task = allTasks[taskId];
-  if (!task) return;
-
-  const newTitle = $("edit-title").value.trim() || "Sans titre";
-  const newDesc = $("edit-desc").value;
-  const newDate = $("edit-date").value;
-  const newColumnId = $("edit-status").value;
-  const tagsInput = $("edit-tags").value;
-  const newTags = tagsInput ? tagsInput.split(",").map(t => t.trim()).filter(t => t.length > 0) : [];
-  const makeCompleted = (newColumnId === "done");
-  setSyncStatus("connecting", "Sauvegarde...");
-
-  try {
-    const rawNotes = serializeTaskNotes(newDesc, {
-      columnId: newColumnId, tags: newTags, subtasks: task.subtasks,
-      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl
-    });
-    const body = {
-      title: newTitle, notes: rawNotes,
-      status: makeCompleted ? "completed" : "needsAction",
-      due: newDate ? new Date(newDate).toISOString() : null
-    };
-    if (!makeCompleted) body.completed = null;
-    await apiCall(`/lists/${activeListId}/tasks/${taskId}`, "PATCH", body);
-
-    task.title = newTitle; task.desc = newDesc; task.date = newDate;
-    task.displayDate = newDate ? formatDateFriendly(newDate) : "";
-    task.columnId = newColumnId; task.tags = newTags; task.completed = makeCompleted;
-
-    const cardEl = kanbanShadowRoot.getElementById(taskId);
-    if (cardEl) cardEl.remove();
-    renderTaskCard(task);
-    updateBadges();
-
-    // Mettre à jour le cache local
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    closeEditor();
-    setSyncStatus("connected", "Modifiée !");
-  } catch (error) {
-    setSyncStatus("error", "Sync échec");
-  }
-}
-
-async function triggerDeleteTask() {
-  if (!navigator.onLine) {
-    alert("Impossible de supprimer la tâche en mode hors-ligne.");
-    setSyncStatus("offline", "Hors-ligne (Cache)");
-    return;
-  }
-
-  const taskId = $("edit-id").value;
-  const task = allTasks[taskId];
-  if (!task) return;
-  if (!confirm("Voulez-vous vraiment supprimer définitivement cette tâche ?")) return;
-  setSyncStatus("connecting", "Suppression...");
-  try {
-    await apiCall(`/lists/${activeListId}/tasks/${taskId}`, "DELETE");
-    const cardEl = kanbanShadowRoot.getElementById(taskId);
-    if (cardEl) cardEl.remove();
-    delete allTasks[taskId];
-    updateBadges();
-
-    // Mettre à jour le cache local
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    closeEditor();
-    setSyncStatus("connected", "Supprimée");
-  } catch (error) {
-    setSyncStatus("error", "Échec suppression");
-  }
-}
-
-// --- Toast Gmail ---
-function showGmailToast(emailData) {
-  capturedEmail = emailData;
-  const toast = $("gmail-toast");
-  $("gmail-toast-subject").innerText = emailData.title;
-  toast.classList.add("visible");
-}
-
-function hideGmailToast() {
-  $("gmail-toast").classList.remove("visible");
-  chrome.storage.local.remove("lastCapturedEmail").catch(() => {});
-}
-
-async function openEditorWithCapturedEmail() {
-  if (!navigator.onLine) {
-    alert("Impossible de lier un e-mail en mode hors-ligne.");
-    setSyncStatus("offline", "Hors-ligne (Cache)");
-    return;
-  }
-
-  if (!capturedEmail) return;
-  setSyncStatus("connecting", "Liaison e-mail...");
-  hideGmailToast();
-  chrome.storage.local.remove("lastCapturedEmail").catch(() => {});
-
-  try {
-    const rawNotes = serializeTaskNotes("Consulter l'e-mail lié ci-dessous pour plus de détails.", {
-      columnId: "todo", tags: ["Gmail"], subtasks: [],
-      gmailId: capturedEmail.gmailId, gmailSubject: capturedEmail.title,
-      gmailUrl: capturedEmail.gmailUrl
-    });
-    const body = { title: capturedEmail.title, notes: rawNotes, status: "needsAction" };
-    const createdRawTask = await apiCall(`/lists/${activeListId}/tasks`, "POST", body);
-    const task = {
-      id: createdRawTask.id, title: createdRawTask.title,
-      desc: "Consulter l'e-mail lié ci-dessous pour plus de détails.",
-      date: "", displayDate: "", tags: ["Gmail"], subtasks: [],
-      gmailId: capturedEmail.gmailId, gmailSubject: capturedEmail.title,
-      gmailUrl: capturedEmail.gmailUrl, columnId: "todo", completed: false
-    };
-    allTasks[task.id] = task;
-    renderTaskCard(task);
-    updateBadges();
-
-    // Mettre à jour le cache local
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    openEditor(task.id);
-    setSyncStatus("connected", "Lié !");
-  } catch (error) {
-    setSyncStatus("error", "Échec liaison");
-  }
-  capturedEmail = null;
-}
-
-async function checkLastCapturedEmail() {
-  try {
-    const storage = await chrome.storage.local.get(["lastCapturedEmail"]);
-    if (storage.lastCapturedEmail) showGmailToast(storage.lastCapturedEmail);
-  } catch (err) {
-    console.error("Erreur lors du décodage de l'e-mail stocké :", err);
-  }
-}
-
-// --- Vue Smart ---
-function switchTab(tab) {
-  const tabKanban = $("tab-kanban");
-  const tabSmart = $("tab-smart");
-  const viewKanban = $("view-kanban");
-  const viewSmart = $("view-smart");
-
-  if (tab === "kanban") {
-    tabKanban.classList.add("active"); tabSmart.classList.remove("active");
-    viewKanban.classList.remove("hidden"); viewSmart.classList.add("hidden");
-  } else {
-    tabSmart.classList.add("active"); tabKanban.classList.remove("active");
-    viewKanban.classList.add("hidden"); viewSmart.classList.remove("hidden");
-    renderSmartView();
-  }
-}
-
-function renderSmartView() {
-  const todayContainer = $("smart-today");
-  const weekContainer = $("smart-week");
-  todayContainer.innerHTML = "";
-  weekContainer.innerHTML = "";
-
-  const todayStr = getLocalDateString(new Date());
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  const nextWeekStr = getLocalDateString(nextWeek);
-  let todayCount = 0, weekCount = 0;
-
-  Object.values(allTasks).forEach(task => {
-    if (task.completed || !task.date) return;
-    if (task.date === todayStr) { cloneCardToContainer(task, todayContainer); todayCount++; }
-    else if (task.date > todayStr && task.date <= nextWeekStr) { cloneCardToContainer(task, weekContainer); weekCount++; }
-  });
-
-  if (todayCount === 0) todayContainer.innerHTML = `<p class="smart-empty">Aucune tâche planifiée pour aujourd'hui.</p>`;
-  if (weekCount === 0) weekContainer.innerHTML = `<p class="smart-empty">Aucune tâche planifiée pour cette semaine.</p>`;
-}
-
-function cloneCardToContainer(task, container) {
-  const card = document.createElement("div");
-  card.className = "smart-card";
-  let tagsHtml = "";
-  if (task.tags && task.tags.length > 0) {
-    tagsHtml = `<div class="card-tags">`;
-    task.tags.forEach(tag => {
-      const cls = tag.toLowerCase() === "urgent" ? "tag tag-urgent" : "tag tag-default";
-      tagsHtml += `<span class="${cls}">${escapeHtml(tag)}</span>`;
-    });
-    tagsHtml += `</div>`;
-  }
-  card.innerHTML = `
-    ${tagsHtml}
-    <h4 class="card-title">${escapeHtml(task.title)}</h4>
-    ${task.desc ? `<p class="card-desc" style="-webkit-line-clamp:1;">${escapeHtml(task.desc)}</p>` : ""}
-    <div class="smart-card-footer">
-      <span class="smart-date-badge">${task.displayDate}</span>
-      <span class="smart-column-badge">${task.columnId === "inprogress" ? "En cours" : "À faire"}</span>
-    </div>
-  `;
-  card.addEventListener("click", () => {
-    switchTab("kanban");
-    setTimeout(() => openEditor(task.id), 150);
-  });
-  container.appendChild(card);
-}
-
-// --- Utilitaires ---
-function clearColumns() {
-  ["todo", "inprogress", "done"].forEach(id => {
-    const col = $(`col-${id}`);
-    if (col) col.innerHTML = "";
-  });
-}
-
-function toggleSkeletons(show) {
-  ["todo", "inprogress", "done"].forEach(id => {
-    const skeleton = $(`skeleton-${id}`);
-    if (skeleton) {
-      if (show) skeleton.classList.remove("hidden");
-      else skeleton.classList.add("hidden");
-    }
-  });
-}
-
-function updateBadges() {
-  ["todo", "inprogress", "done"].forEach(id => {
-    const col = $(`col-${id}`);
-    const badge = $(`badge-${id}`);
-    if (col && badge) badge.innerText = col.children.length;
-  });
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
-
-function formatDateFriendly(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-}
-
-function formatDateForInput(isoStr) {
-  if (!isoStr) return "";
-  return new Date(isoStr).toISOString().split("T")[0];
-}
-
-function getLocalDateString(date) {
-  const offset = date.getTimezoneOffset();
-  const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
-  return adjustedDate.toISOString().split("T")[0];
-}
-
-// ============================================================================
-// SECTION 6 : Observateur DOM Gmail & Initialisation
-// ============================================================================
-
-let isPerformingMutation = false;
-let lastRunTime = 0;
-let throttleTimeout = null;
-const THROTTLE_DELAY = 100; // Fréquence d'exécution max de 100ms
-
-function scheduleSafeInject() {
-  if (isPerformingMutation) return; // Ignore nos propres changements de DOM
-  
-  const now = Date.now();
-  if (now - lastRunTime >= THROTTLE_DELAY) {
-    if (throttleTimeout) {
-      clearTimeout(throttleTimeout);
-      throttleTimeout = null;
-    }
-    lastRunTime = now;
-    safeInject();
-  } else {
-    if (!throttleTimeout) {
-      throttleTimeout = setTimeout(() => {
-        lastRunTime = Date.now();
-        throttleTimeout = null;
-        safeInject();
-      }, THROTTLE_DELAY - (now - lastRunTime));
-    }
-  }
-}
-
-const observer = new MutationObserver(() => {
-  scheduleSafeInject();
-});
-
-/** Fonction d'injection sécurisée utilisant un verrou et une réinjection si nécessaire */
-function safeInject() {
-  if (isPerformingMutation) return;
-  isPerformingMutation = true;
-  
-  try {
-    const emailDetails = getEmailDetails();
-    if (emailDetails) {
-      injectKanbanButton();
-    } else {
-      const buttons = document.querySelectorAll(".gmail-kanban-trigger-class");
-      buttons.forEach(btn => btn.remove());
-    }
-    injectSidebarButton();
-    
-    // Si le Kanban est censé être ouvert, vérifier s'il est toujours présent et dans le bon parent
-    if (isKanbanActive) {
-      const mainPane = document.querySelector("div[role='main']");
-      const embed = document.getElementById("gmail-kanban-embed");
-      if (mainPane && (!embed || embed.parentNode !== mainPane)) {
-        console.log("[Kanban] Conteneur Kanban manquant ou déplacé par Gmail, ré-injection...");
-        showKanban();
-      }
-    }
-    syncKanbanVisibility();
-  } catch (err) {
-    console.error("Erreur lors de l'injection sécurisée de Kanban Tasks :", err);
-  } finally {
-    // On libère le verrou par un setTimeout (macrotask) pour s'assurer que toutes les
-    // mutations synchrones et leurs microtasks correspondantes du MutationObserver ont été ignorées.
-    setTimeout(() => {
-      isPerformingMutation = false;
-    }, 0);
-  }
-}
-
-observer.observe(document.body, { childList: true, subtree: true });
-
-// Gestion des changements de hash (navigation Gmail via raccourcis clavier ou autre)
-window.addEventListener("hashchange", () => {
-  if (isKanbanActive) hideKanban();
-});
-
-// Gestion de l'historique de navigation (boutons Précédent/Suivant du navigateur)
-window.addEventListener("popstate", () => {
-  if (isKanbanActive) hideKanban();
-});
-
-// Interception des clics sur la navigation Gmail pour refermer automatiquement le Kanban
-document.addEventListener("click", (e) => {
-  if (!isKanbanActive) return;
-
-  // Ignorer si le clic est à l'intérieur de notre Kanban Shadow DOM
-  const embedContainer = document.getElementById("gmail-kanban-embed");
-  if (embedContainer && embedContainer.contains(e.target)) {
-    return;
-  }
-
-  // Si on clique sur un lien, un bouton ou un rôle interactif propre à Gmail
-  const closestLink = e.target.closest("a");
-  const closestButton = e.target.closest("button");
-  const closestRoleLink = e.target.closest("[role='link']");
-  const closestRoleTab = e.target.closest("[role='tab']");
-
-  if (closestLink || closestButton || closestRoleLink || closestRoleTab) {
-    // Si c'est notre propre bouton de sidebar, on ignore (il gère déjà son propre clic)
-    if (closestLink && closestLink.id === "gmail-sidebar-kanban-link") {
-      return;
-    }
-    // Sinon, l'utilisateur a navigué ailleurs dans Gmail -> on referme le Kanban
-    hideKanban();
-  }
-}, true); // Phase de capture pour intercepter l'événement au plus tôt
-
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    injectSidebarButton();
-  }, 1000);
-});
+  `,t.insertBefore(a,e);let s=a.querySelector("a");s.addEventListener("click",i=>{i.preventDefault(),i.stopPropagation(),I()}),s.addEventListener("mouseenter",()=>{g||(s.style.backgroundColor="rgba(0,0,0,0.04)")}),s.addEventListener("mouseleave",()=>{g||(s.style.backgroundColor="transparent")}),K()}function K(){let e=document.getElementById("gmail-sidebar-kanban");if(!e)return;let t=e.querySelector("a"),n=e.querySelector("#sidebar-kanban-icon"),a=e.querySelector("#sidebar-kanban-text");!t||!n||!a||(g?(t.style.backgroundColor="#c2e7ff",t.style.color="#041e49",n.setAttribute("stroke","#0b57d0"),a.style.color="#041e49",a.style.fontWeight="700"):(t.style.backgroundColor="transparent",t.style.color="#444746",n.setAttribute("stroke","#444746"),a.style.color="#444746",a.style.fontWeight="500"))}var Te,Ae,H=T(()=>{B();Te="h2.hP",Ae="div[role='toolbar'], .Cq, .G-tF"});function Se(){if(z)return;let e=Date.now();e-N>=ce?(w&&(clearTimeout(w),w=null),N=e,de()):w||(w=setTimeout(()=>{N=Date.now(),w=null,de()},ce-(e-N)))}function de(){if(!z){z=!0;try{if(G()?le():document.querySelectorAll(".gmail-kanban-trigger-class").forEach(n=>n.remove()),$(),g){let t=document.querySelector("div[role='main']"),n=document.getElementById("gmail-kanban-embed");t&&(!n||n.parentNode!==t)&&(console.log("[Kanban] Conteneur Kanban manquant ou d\xE9plac\xE9 par Gmail, r\xE9-injection..."),I())}ae()}catch(e){console.error("Erreur lors de l'injection s\xE9curis\xE9e de Kanban Tasks :",e)}finally{setTimeout(()=>{z=!1},0)}}}var z,N,w,ce,ue,me=T(()=>{H();B();z=!1,N=0,w=null,ce=100;ue=new MutationObserver(()=>{Se()})});var Ie=ge(()=>{me();H();B();ue.observe(document.body,{childList:!0,subtree:!0});window.addEventListener("hashchange",()=>{g&&M()});window.addEventListener("popstate",()=>{g&&M()});document.addEventListener("click",e=>{if(!g)return;let t=document.getElementById("gmail-kanban-embed");if(t&&t.contains(e.target))return;let n=e.target.closest("a"),a=e.target.closest("button"),s=e.target.closest("[role='link']"),i=e.target.closest("[role='tab']");if(n||a||s||i){if(n&&n.id==="gmail-sidebar-kanban-link")return;M()}},!0);window.addEventListener("load",()=>{setTimeout(()=>{$()},1e3)})});Ie();})();

@@ -6,7 +6,7 @@ import {
   parseTaskNotes,
   serializeTaskNotes,
   isConfigTask
-} from "./parser.js";
+} from "./src/parser.js";
 
 describe("parser.js - Validation de Schéma & Robustesse", () => {
   

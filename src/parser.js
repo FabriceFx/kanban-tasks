@@ -1,12 +1,12 @@
 /**
- * parser.js
+ * src/parser.js
  * Ce module gère la sérialisation et la désérialisation des données.
  * Il permet d'encapsuler les métadonnées Kanban (colonnes, tags, liens Gmail)
  * directement dans le champ textuel 'notes' (description) d'une tâche Google Tasks.
  */
 
 // Délimiteur unique pour isoler la description utilisateur des métadonnées système
-const METADATA_DELIMITER = "\n\n--- KANBAN_METADATA ---\n";
+export const METADATA_DELIMITER = "\n\n--- KANBAN_METADATA ---\n";
 
 /**
  * @typedef {Object} Subtask
@@ -36,7 +36,7 @@ const METADATA_DELIMITER = "\n\n--- KANBAN_METADATA ---\n";
  * en cas d'absence ou de corruption des données.
  * @type {KanbanMetadata}
  */
-const DEFAULT_METADATA = {
+export const DEFAULT_METADATA = {
   columnId: "todo",
   tags: [],
   subtasks: [],
@@ -50,7 +50,7 @@ const DEFAULT_METADATA = {
  * @param {any} rawObj - Les métadonnées brutes issues du parsing JSON.
  * @returns {KanbanMetadata} Un objet de métadonnées propre et garanti valide.
  */
-function validateMetadata(rawObj) {
+export function validateMetadata(rawObj) {
   if (!rawObj || typeof rawObj !== "object") {
     return { ...DEFAULT_METADATA };
   }
@@ -106,7 +106,7 @@ function validateMetadata(rawObj) {
  * @param {string|null|undefined} rawNotes - Le contenu brut du champ 'notes' de Google Tasks.
  * @returns {ParsedTaskNotes} Un objet contenant la { description, metadata }.
  */
-function parseTaskNotes(rawNotes) {
+export function parseTaskNotes(rawNotes) {
   if (!rawNotes || typeof rawNotes !== 'string') {
     return { 
       description: "", 
@@ -146,7 +146,7 @@ function parseTaskNotes(rawNotes) {
  * @param {KanbanMetadata} metadata - Les métadonnées Kanban (columnId, tags, gmailUrl, etc.).
  * @returns {string} Le texte brut final prêt à être enregistré dans le champ 'notes' de Google Tasks.
  */
-function serializeTaskNotes(description, metadata) {
+export function serializeTaskNotes(description, metadata) {
   const cleanDescription = description ? description.trim() : "";
   const cleanMetadata = validateMetadata(metadata);
   const jsonString = JSON.stringify(cleanMetadata, null, 2);
@@ -158,18 +158,6 @@ function serializeTaskNotes(description, metadata) {
  * @param {any} task - La tâche Google Tasks à analyser.
  * @returns {boolean} True s'il s'agit du fichier de configuration du tableau Kanban.
  */
-function isConfigTask(task) {
+export function isConfigTask(task) {
   return Boolean(task && typeof task === "object" && task.title === "__KANBAN_CONFIG__");
-}
-
-// Export conditionnel CommonJS pour l'environnement de test Vitest/Node
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = {
-    METADATA_DELIMITER,
-    DEFAULT_METADATA,
-    validateMetadata,
-    parseTaskNotes,
-    serializeTaskNotes,
-    isConfigTask
-  };
 }

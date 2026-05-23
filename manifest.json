@@ -25,7 +25,6 @@
                 "https://mail.google.com/*"
             ],
             "js": [
-                "parser.js",
                 "content.js"
             ]
         }
