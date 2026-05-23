@@ -1,0 +1,21 @@
+{
+  "name": "kanban-tasks",
+  "version": "1.0.0",
+  "description": "Tableau Kanban Gmail sans serveur s'appuyant sur Google Tasks",
+  "main": "parser.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "gmail",
+    "kanban",
+    "google-tasks"
+  ],
+  "author": "Fabrice Faucheux",
+  "license": "MIT"
+}
