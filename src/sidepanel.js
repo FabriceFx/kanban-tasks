@@ -1041,3 +1041,64 @@ function getLocalDateString(date) {
   const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
   return adjustedDate.toISOString().split('T')[0];
 }
+
+function isUserTyping() {
+  const activeEl = document.activeElement;
+  if (!activeEl) return false;
+  return (
+    activeEl.tagName === "INPUT" ||
+    activeEl.tagName === "TEXTAREA" ||
+    activeEl.isContentEditable ||
+    activeEl.hasAttribute("contenteditable") ||
+    activeEl.getAttribute("role") === "textbox"
+  );
+}
+
+// Gestion des raccourcis clavier du panneau latéral
+window.addEventListener("keydown", (e) => {
+  // Escape : Fermeture de l'éditeur ou du toast Gmail (toujours autorisé, même en cours de saisie)
+  if (e.key === "Escape" || e.keyCode === 27) {
+    const editor = document.getElementById("editor-panel");
+    const toast = document.getElementById("gmail-toast");
+    let closedAny = false;
+
+    if (editor && !editor.classList.contains("hidden")) {
+      closeEditor();
+      closedAny = true;
+    }
+    if (toast && !toast.classList.contains("hidden")) {
+      hideGmailToast();
+      closedAny = true;
+    }
+
+    if (closedAny) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    return;
+  }
+
+  // Vérifier si l'utilisateur est en train de saisir du texte
+  if (isUserTyping()) return;
+
+  // N ou n : Créer une nouvelle tâche dans la colonne "À faire"
+  if ((e.key === "n" || e.key === "N" || e.keyCode === 78) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    triggerAddNewTask("todo");
+    return;
+  }
+
+  // Alt + T : Alterne entre l'onglet "Tableau Kanban" et "Objectif Travail"
+  if (e.altKey && (e.key === "t" || e.key === "T" || e.keyCode === 84)) {
+    e.preventDefault();
+    const viewKanban = document.getElementById("view-kanban");
+    if (viewKanban) {
+      if (viewKanban.classList.contains("hidden")) {
+        switchTab("kanban");
+      } else {
+        switchTab("smart");
+      }
+    }
+  }
+}, true); // Phase de capture
+

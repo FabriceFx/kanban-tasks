@@ -23,26 +23,40 @@ Grâce à une intégration invisible et respectueuse du DOM de Gmail, **Kanban T
 * **Éditeur de Détails Gmail Contextuel :** Modifiez les titres, descriptions, échéances et étiquettes depuis un panneau coulissant à droite. Si une tâche est issue d'un e-mail, un lien direct cliquable permet de rouvrir instantanément cet e-mail dans Gmail.
 * **Mode "Objectif Travail" (Smart View) :** Une vue chronologique épurée pour voir immédiatement vos priorités planifiées pour *Aujourd'hui* et *Cette semaine*.
 
+### 4. **⌨️ Raccourcis Clavier de Productivité**
+Pour naviguer à la vitesse de la pensée, les raccourcis clavier suivants s'intègrent de façon fluide en respectant votre saisie textuelle ordinaire :
+* **`Alt + K` (Gmail Global) :** Ouvre ou referme instantanément le tableau Kanban.
+* **`N` ou `n` (Kanban ou Panneau Latéral Actif) :** Crée une nouvelle tâche et l'ouvre dans l'éditeur (se désactive automatiquement si vous écrivez dans un formulaire).
+* **`Escape` (Kanban ou Panneau Latéral Actif) :** Ferme le panneau d'édition de tâche ouvert ou le toast Gmail de capture d'e-mail.
+* **`Alt + T` (Kanban ou Panneau Latéral Actif) :** Bascule instantanément entre l'onglet **Tableau Kanban** et l'onglet **Objectif Travail** (Smart View).
+
 ---
 
 ## **📂 Structure du Projet**
 
 ```text
-├── manifest.json         # Déclare l'extension, les permissions OAuth2 et l'architecture
-├── background.js          # Service worker en arrière-plan (authentification & relais de messages)
-├── content.js             # Injection sécurisée dans Gmail (Shadow DOM, MutationObserver robuste)
-├── kanban-embed.css       # Design System complet conforme à Material 3 (Shadow DOM)
-├── parser.js              # Module de sérialisation/désérialisation du JSON de métadonnées
-├── sidepanel.html         # Point d'entrée de la vue plein écran / panneau latéral
-├── sidepanel.js           # Contrôleur visuel de la vue autonome
-└── icons/                 # Ressources graphiques officielles de l'extension
+├── src/                  # 🛠️ CODE SOURCE MODULAIRE (ES Modules)
+│   ├── parser.js         # Sérialisation et désérialisation du JSON de métadonnées
+│   ├── observer.js       # MutationObserver Gmail throttled (100ms max)
+│   ├── dom-injector.js   # Injection du bouton sidebar et de l'icône dans l'e-mail ouvert
+│   ├── kanban-ui.js      # Contrôleur d'interface et état global (Shadow DOM)
+│   ├── content.js        # Point d'entrée principal injecté dans Gmail
+│   └── sidepanel.js      # Contrôleur autonome du panneau latéral (TailwindCSS)
+│
+├── manifest.json         # Déclare l'extension, permissions et OAuth2
+├── background.js         # Service worker en arrière-plan (authentification & relais de messages)
+├── content.js            # [COMPILÉ] Script de contenu Gmail généré par esbuild
+├── sidepanel.js          # [COMPILÉ] Panneau latéral autonome généré par esbuild
+├── sidepanel.html        # Structure HTML du panneau latéral autonome
+├── kanban-embed.css      # Design System complet conforme à Material 3
+└── package.json          # Scripts de build (esbuild) et tests (Vitest)
 ```
 
 ---
 
 ## **🛠️ Fonctionnement du Stockage Décentralisé**
 
-Pour stocker les métadonnées de notre Kanban (statuts de colonnes, étiquettes, liens Gmail) sans serveur, le module [parser.js](file:///Users/fabrice/Documents/Mes%20développements/Kanban%20Task/parser.js) utilise un délimiteur hermétique pour encapsuler un JSON dans la description d'une tâche :
+Pour stocker les métadonnées de notre Kanban (statuts de colonnes, étiquettes, liens Gmail) sans serveur, le module [parser.js](file:///Users/fabrice/Documents/Mes%20développements/Kanban%20Task/src/parser.js) utilise un délimiteur hermétique pour encapsuler un JSON dans la description d'une tâche :
 
 ```text
 [Ceci est la description rédigée librement par l'utilisateur]
@@ -67,11 +81,25 @@ Pour stocker les métadonnées de notre Kanban (statuts de colonnes, étiquettes
 1. Ouvrez Google Chrome et accédez à `chrome://extensions/`.
 2. Activez le **Mode développeur** à l'aide de l'interrupteur situé en haut à droite.
 
-### **Étape 2 : Charger l'extension**
-1. Cliquez sur **Charger l'extension non empaquetée** en haut à gauche.
-2. Sélectionnez le dossier contenant l'ensemble de ces fichiers.
+### **Étape 2 : Configurer le code source**
+1. Clonez ou téléchargez le dépôt.
+2. Installez les dépendances NPM :
+   ```bash
+   npm install
+   ```
+3. Lancer la compilation à l'aide des scripts fournis :
+   * **En continu (Watch) :** `npm run watch` (recompile vos modifications à chaque sauvegarde).
+   * **Production (Build) :** `npm run build` (génère les bundles minifiés et optimisés).
+4. Pour valider l'intégrité du parser de métadonnées, exécutez les tests unitaires :
+   ```bash
+   npm run test
+   ```
 
-### **Étape 3 : Configurer vos identifiants OAuth2**
+### **Étape 3 : Charger l'extension**
+1. Cliquez sur **Charger l'extension non empaquetée** en haut à gauche.
+2. Sélectionnez le dossier racine `Kanban Task` contenant le `manifest.json`.
+
+### **Étape 4 : Configurer vos identifiants OAuth2**
 1. Copiez l'ID d'extension généré par Chrome sur la carte de l'extension (ex: `abcdefgh...`).
 2. Rendez-vous sur votre [Google Cloud Console](https://console.cloud.google.com/).
 3. Créez des identifiants **ID de client OAuth** de type **Application Chrome** et collez votre ID d'extension dans le champ correspondant.
@@ -83,5 +111,5 @@ Pour stocker les métadonnées de notre Kanban (statuts de colonnes, étiquettes
 
 ## **🧪 Guide d'utilisation**
 1. Lancez ou actualisez votre onglet Gmail (**Cmd + Shift + R**).
-2. Un bouton **Tableau Kanban** apparaît dans votre navigation de gauche. Cliquez dessus pour déployer l'interface.
-3. Ouvrez n'importe quel e-mail : cliquez sur le **bouton circulaire Kanban** dans la barre d'outils Gmail pour le transformer instantanément en tâche active.
+2. Un bouton **Tableau Kanban** apparaît dans votre navigation de gauche. Cliquez dessus pour déployer l'interface (ou utilisez le raccourci **Alt + K**).
+3. Ouvrez n'importe quel e-mail : cliquez sur la fine **icône circulaire Kanban** dans la barre d'outils Gmail pour le transformer instantanément en tâche active.

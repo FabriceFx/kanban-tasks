@@ -6,7 +6,7 @@
 
 import { observer } from "./observer.js";
 import { injectSidebarButton } from "./dom-injector.js";
-import { isKanbanActive, hideKanban } from "./kanban-ui.js";
+import { isKanbanActive, showKanban, hideKanban, isUserTyping } from "./kanban-ui.js";
 
 // Lancer l'observation globale du DOM Gmail
 observer.observe(document.body, { childList: true, subtree: true });
@@ -19,6 +19,21 @@ window.addEventListener("hashchange", () => {
 // Gestion de l'historique de navigation (boutons Précédent/Suivant du navigateur)
 window.addEventListener("popstate", () => {
   if (isKanbanActive) hideKanban();
+});
+
+// Raccourci global Alt + K pour basculer la visibilité du Tableau Kanban
+window.addEventListener("keydown", (e) => {
+  // Ignorer si l'utilisateur est en train de saisir du texte
+  if (isUserTyping()) return;
+
+  if (e.altKey && (e.key === "k" || e.key === "K" || e.keyCode === 75)) {
+    e.preventDefault();
+    if (isKanbanActive) {
+      hideKanban();
+    } else {
+      showKanban();
+    }
+  }
 });
 
 // Interception des clics sur la navigation Gmail pour refermer automatiquement le Kanban

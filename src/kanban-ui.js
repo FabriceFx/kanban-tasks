@@ -1229,3 +1229,80 @@ function getLocalDateString(date) {
   const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
   return adjustedDate.toISOString().split("T")[0];
 }
+
+export function isUserTyping() {
+  const activeEl = document.activeElement;
+  if (!activeEl) return false;
+
+  const isMainTyping = (
+    activeEl.tagName === "INPUT" ||
+    activeEl.tagName === "TEXTAREA" ||
+    activeEl.isContentEditable ||
+    activeEl.hasAttribute("contenteditable") ||
+    activeEl.getAttribute("role") === "textbox"
+  );
+  if (isMainTyping) return true;
+
+  if (kanbanShadowRoot && kanbanShadowRoot.activeElement) {
+    const shadowActive = kanbanShadowRoot.activeElement;
+    return (
+      shadowActive.tagName === "INPUT" ||
+      shadowActive.tagName === "TEXTAREA" ||
+      shadowActive.isContentEditable ||
+      shadowActive.hasAttribute("contenteditable")
+    );
+  }
+
+  return false;
+}
+
+// Gestion des raccourcis clavier internes (Kanban Actif)
+window.addEventListener("keydown", (e) => {
+  if (!isKanbanActive) return;
+
+  // Escape : Fermeture de l'éditeur ou du toast Gmail (toujours autorisé, même en cours de saisie)
+  if (e.key === "Escape" || e.keyCode === 27) {
+    const editor = $("editor-panel");
+    const toast = $("gmail-toast");
+    let closedAny = false;
+
+    if (editor && !editor.classList.contains("hidden")) {
+      closeEditor();
+      closedAny = true;
+    }
+    if (toast && !toast.classList.contains("hidden")) {
+      hideGmailToast();
+      closedAny = true;
+    }
+
+    if (closedAny) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    return;
+  }
+
+  // Vérifier si l'utilisateur est en train de saisir du texte
+  if (isUserTyping()) return;
+
+  // N ou n : Créer une nouvelle tâche dans la colonne "À faire"
+  if ((e.key === "n" || e.key === "N" || e.keyCode === 78) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    triggerAddNewTask("todo");
+    return;
+  }
+
+  // Alt + T : Alterne entre l'onglet "Tableau Kanban" et "Objectif Travail"
+  if (e.altKey && (e.key === "t" || e.key === "T" || e.keyCode === 84)) {
+    e.preventDefault();
+    const tabKanban = $("tab-kanban");
+    if (tabKanban) {
+      if (tabKanban.classList.contains("active")) {
+        switchTab("smart");
+      } else {
+        switchTab("kanban");
+      }
+    }
+  }
+}, true); // Phase de capture pour intercepter au plus tôt
+
