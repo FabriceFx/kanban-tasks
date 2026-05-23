@@ -712,6 +712,36 @@ function setupKanbanEventListeners() {
     }
   });
 
+  // Écoute des changements de cache en temps réel (pour synchronisation inter-contextes)
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local" && activeListId) {
+      const cacheKey = `kanban_tasks_cache_${activeListId}`;
+      if (changes[cacheKey]) {
+        const newCache = changes[cacheKey].newValue;
+        if (newCache && newCache.items) {
+          const localKeys = Object.keys(allTasks);
+          const incomingIds = newCache.items.map(t => t.id);
+          
+          const hasChanges = localKeys.length !== incomingIds.length || 
+            newCache.items.some(t => {
+              const local = allTasks[t.id];
+              return !local || local.columnId !== t.columnId || local.title !== t.title || local.desc !== t.desc;
+            });
+            
+          if (hasChanges) {
+            console.log("[Kanban] Mise à jour en temps réel détectée depuis le cache");
+            renderTasksFromData(newCache.items);
+            if (!navigator.onLine) {
+              setSyncStatus("offline", "Hors-ligne (Cache)");
+            } else {
+              setSyncStatus("connected", "À jour (Synchro)");
+            }
+          }
+        }
+      }
+    }
+  });
+
   // Affichage de l'ID d'extension
   const displayIdEl = $("extension-id-display");
   if (displayIdEl) displayIdEl.innerText = chrome.runtime.id;
@@ -770,34 +800,84 @@ function setSyncStatus(state, text) {
 
 // --- Chargement des Boards ---
 async function loadBoards() {
+  setSyncStatus("connecting", "Synchro listes...");
+  
   try {
-    setSyncStatus("connecting", "Synchro listes...");
-    const data = await apiCall("/users/@me/lists");
-    const boardSelect = $("board-select");
-    boardSelect.innerHTML = "";
-
-    if (data && data.items && data.items.length > 0) {
-      data.items.forEach(list => {
-        const option = document.createElement("option");
-        option.value = list.id;
-        option.innerText = list.title;
-        boardSelect.appendChild(option);
-      });
-
-      if (activeListId && Array.from(boardSelect.options).some(opt => opt.value === activeListId)) {
-        boardSelect.value = activeListId;
-      } else {
-        activeListId = data.items[0].id;
-        boardSelect.value = activeListId;
-        chrome.storage.local.set({ activeListId });
-      }
-      loadTasks(activeListId);
-    } else {
-      boardSelect.innerHTML = '<option value="" disabled>Aucun tableau trouvé</option>';
-      setSyncStatus("connected", "Vide");
+    // 1. Chercher dans le cache
+    const cache = await chrome.storage.local.get("kanban_lists_cache");
+    const cachedData = cache.kanban_lists_cache;
+    
+    if (cachedData && Date.now() - cachedData.timestamp < 30000) {
+      console.log("[Kanban] Utilisation du cache pour les listes");
+      renderBoards(cachedData.items);
+      return;
     }
+  } catch (err) {
+    console.warn("[Kanban] Échec lecture cache listes :", err);
+  }
+
+  // 2. Fetch de l'API si le cache est absent/expiré
+  try {
+    const data = await apiCall("/users/@me/lists");
+    const items = (data && data.items) || [];
+    
+    // Mettre en cache
+    await chrome.storage.local.set({
+      kanban_lists_cache: {
+        timestamp: Date.now(),
+        items
+      }
+    });
+    
+    renderBoards(items);
   } catch (error) {
-    setSyncStatus("error", "Erreur listes");
+    console.error("[Kanban] Erreur réseau lors de la récupération des listes :", error);
+    
+    // Fallback hors-ligne : tenter de charger le cache expiré
+    try {
+      const cache = await chrome.storage.local.get("kanban_lists_cache");
+      const cachedData = cache.kanban_lists_cache;
+      if (cachedData && cachedData.items) {
+        console.log("[Kanban] Fallback hors-ligne sur cache expiré pour les listes");
+        renderBoards(cachedData.items, true);
+        return;
+      }
+    } catch (e) {}
+    
+    setSyncStatus("error", "Erreur réseau");
+    const boardSelect = $("board-select");
+    if (boardSelect) boardSelect.innerHTML = '<option value="" disabled>Erreur de connexion</option>';
+  }
+}
+
+// Fonction auxiliaire pour dessiner les listes
+function renderBoards(items, isOffline = false) {
+  const boardSelect = $("board-select");
+  if (!boardSelect) return;
+  boardSelect.innerHTML = "";
+
+  if (items.length > 0) {
+    items.forEach(list => {
+      const option = document.createElement("option");
+      option.value = list.id;
+      option.innerText = list.title + (isOffline ? " (hors-ligne)" : "");
+      boardSelect.appendChild(option);
+    });
+
+    if (activeListId && Array.from(boardSelect.options).some(opt => opt.value === activeListId)) {
+      boardSelect.value = activeListId;
+    } else {
+      activeListId = items[0].id;
+      boardSelect.value = activeListId;
+      chrome.storage.local.set({ activeListId });
+    }
+    loadTasks(activeListId);
+    if (isOffline) {
+      setSyncStatus("offline", "Hors-ligne (Cache)");
+    }
+  } else {
+    boardSelect.innerHTML = '<option value="" disabled>Aucun tableau trouvé</option>';
+    setSyncStatus("connected", "Vide");
   }
 }
 
@@ -808,11 +888,35 @@ async function loadTasks(listId) {
   toggleSkeletons(true);
   setSyncStatus("connecting", "Chargement tâches...");
 
+  const cacheKey = `kanban_tasks_cache_${listId}`;
+  
+  try {
+    // 1. Chercher dans le cache
+    const cache = await chrome.storage.local.get(cacheKey);
+    const cachedData = cache[cacheKey];
+    
+    if (cachedData && Date.now() - cachedData.timestamp < 30000) {
+      console.log("[Kanban] Utilisation du cache pour les tâches de", listId);
+      toggleSkeletons(false);
+      renderTasksFromData(cachedData.items);
+      if (!navigator.onLine) {
+        setSyncStatus("offline", "Hors-ligne (Cache)");
+      } else {
+        setSyncStatus("connected", "À jour (Cache)");
+      }
+      return;
+    }
+  } catch (err) {
+    console.warn("[Kanban] Échec lecture cache tâches :", err);
+  }
+
+  // 2. Fetch de l'API si le cache est absent/expiré
   try {
     const data = await apiCall(`/lists/${listId}/tasks?showCompleted=true&showHidden=true`);
     toggleSkeletons(false);
-    allTasks = {};
+    
     const taskItems = (data && data.items) || [];
+    const formattedTasks = [];
 
     taskItems.forEach(rawTask => {
       if (isConfigTask(rawTask)) return;
@@ -829,16 +933,48 @@ async function loadTasks(listId) {
         gmailUrl: metadata.gmailUrl, columnId,
         completed: rawTask.status === "completed"
       };
-      allTasks[task.id] = task;
-      renderTaskCard(task);
+      formattedTasks.push(task);
     });
 
-    updateBadges();
+    // Mettre en cache
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: formattedTasks
+      }
+    });
+
+    renderTasksFromData(formattedTasks);
     setSyncStatus("connected", "À jour");
   } catch (error) {
+    console.error("[Kanban] Erreur de récupération des tâches :", error);
     toggleSkeletons(false);
-    setSyncStatus("error", "Erreur tâches");
+
+    // Fallback hors-ligne : tenter de charger le cache expiré
+    try {
+      const cache = await chrome.storage.local.get(cacheKey);
+      const cachedData = cache[cacheKey];
+      if (cachedData && cachedData.items) {
+        console.log("[Kanban] Fallback hors-ligne sur cache expiré pour les tâches");
+        renderTasksFromData(cachedData.items);
+        setSyncStatus("offline", "Hors-ligne (Cache)");
+        return;
+      }
+    } catch (e) {}
+
+    setSyncStatus("error", "Erreur réseau");
   }
+}
+
+// Fonction auxiliaire pour dessiner les tâches à partir de données pré-formattées
+function renderTasksFromData(tasks) {
+  clearColumns();
+  allTasks = {};
+  tasks.forEach(task => {
+    allTasks[task.id] = task;
+    renderTaskCard(task);
+  });
+  updateBadges();
 }
 
 // --- Rendu des Cartes ---
@@ -914,6 +1050,14 @@ async function handleTaskColumnMove(taskId, columnId) {
   const task = allTasks[taskId];
   if (!task) return;
   const previousColumn = task.columnId;
+  
+  if (!navigator.onLine) {
+    alert("Impossible de modifier la tâche en mode hors-ligne. Veuillez rétablir votre connexion internet.");
+    renderTasksFromData(Object.values(allTasks));
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+
   task.columnId = columnId;
   const makeCompleted = (columnId === "done");
   task.completed = makeCompleted;
@@ -933,6 +1077,16 @@ async function handleTaskColumnMove(taskId, columnId) {
       const h4 = cardEl.querySelector("h4");
       h4.className = makeCompleted ? "card-title completed" : "card-title";
     }
+
+    // Mettre à jour le cache local
+    const cacheKey = `kanban_tasks_cache_${activeListId}`;
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: Object.values(allTasks)
+      }
+    });
+
     setSyncStatus("connected", "Déplacé !");
   } catch (error) {
     task.columnId = previousColumn;
@@ -944,6 +1098,12 @@ async function handleTaskColumnMove(taskId, columnId) {
 
 // --- Ajout de tâche ---
 async function triggerAddNewTask(columnId) {
+  if (!navigator.onLine) {
+    alert("Impossible d'ajouter une tâche en mode hors-ligne.");
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+  
   setSyncStatus("connecting", "Création tâche...");
   try {
     const rawNotes = serializeTaskNotes("", { columnId, tags: [], subtasks: [] });
@@ -960,6 +1120,16 @@ async function triggerAddNewTask(columnId) {
     allTasks[task.id] = task;
     renderTaskCard(task);
     updateBadges();
+
+    // Mettre à jour le cache local
+    const cacheKey = `kanban_tasks_cache_${activeListId}`;
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: Object.values(allTasks)
+      }
+    });
+
     openEditor(task.id);
     setSyncStatus("connected", "Créée !");
   } catch (error) {
@@ -994,6 +1164,12 @@ function closeEditor() {
 }
 
 async function saveChanges() {
+  if (!navigator.onLine) {
+    alert("Impossible de modifier la tâche en mode hors-ligne.");
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+
   const taskId = $("edit-id").value;
   const task = allTasks[taskId];
   if (!task) return;
@@ -1028,6 +1204,16 @@ async function saveChanges() {
     if (cardEl) cardEl.remove();
     renderTaskCard(task);
     updateBadges();
+
+    // Mettre à jour le cache local
+    const cacheKey = `kanban_tasks_cache_${activeListId}`;
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: Object.values(allTasks)
+      }
+    });
+
     closeEditor();
     setSyncStatus("connected", "Modifiée !");
   } catch (error) {
@@ -1036,6 +1222,12 @@ async function saveChanges() {
 }
 
 async function triggerDeleteTask() {
+  if (!navigator.onLine) {
+    alert("Impossible de supprimer la tâche en mode hors-ligne.");
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+
   const taskId = $("edit-id").value;
   const task = allTasks[taskId];
   if (!task) return;
@@ -1047,6 +1239,16 @@ async function triggerDeleteTask() {
     if (cardEl) cardEl.remove();
     delete allTasks[taskId];
     updateBadges();
+
+    // Mettre à jour le cache local
+    const cacheKey = `kanban_tasks_cache_${activeListId}`;
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: Object.values(allTasks)
+      }
+    });
+
     closeEditor();
     setSyncStatus("connected", "Supprimée");
   } catch (error) {
@@ -1068,6 +1270,12 @@ function hideGmailToast() {
 }
 
 async function openEditorWithCapturedEmail() {
+  if (!navigator.onLine) {
+    alert("Impossible de lier un e-mail en mode hors-ligne.");
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+
   if (!capturedEmail) return;
   setSyncStatus("connecting", "Liaison e-mail...");
   hideGmailToast();
@@ -1091,6 +1299,16 @@ async function openEditorWithCapturedEmail() {
     allTasks[task.id] = task;
     renderTaskCard(task);
     updateBadges();
+
+    // Mettre à jour le cache local
+    const cacheKey = `kanban_tasks_cache_${activeListId}`;
+    await chrome.storage.local.set({
+      [cacheKey]: {
+        timestamp: Date.now(),
+        items: Object.values(allTasks)
+      }
+    });
+
     openEditor(task.id);
     setSyncStatus("connected", "Lié !");
   } catch (error) {
