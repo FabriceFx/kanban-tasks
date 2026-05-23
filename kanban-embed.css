@@ -1,0 +1,1011 @@
+/* ==========================================================================
+   kanban-embed.css
+   Styles Premium de style "Google Material 3 / Gmail" pour l'intégration Shadow DOM.
+   Entièrement autonome, sans aucune dépendance Tailwind.
+   S'intègre de manière invisible dans la charte graphique officielle de Gmail.
+   ========================================================================== */
+
+/* --- Importation des polices système et Google (Roboto & Google Sans) --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:host {
+  /* Tokens officiels Gmail / Google Material 3 */
+  --color-primary: #0b57d0;             /* Bleu Google officiel */
+  --color-primary-hover: #0842a0;       /* Bleu Google hover */
+  --color-primary-bg: #c2e7ff;          /* Bleu clair de sélection */
+  --color-primary-light: #e0b4b400;
+  --color-bg-gmail: #f6f8fc;            /* Fond de page Gmail */
+  --color-surface-column: #f0f4f9;      /* Fond des conteneurs de colonne */
+  --color-card: #ffffff;                /* Fond des cartes */
+  --color-border: #e0e3e9;              /* Bordure ultra-fine de Gmail */
+  --color-text-primary: #1f1f1f;        /* Texte principal Gmail */
+  --color-text-secondary: #444746;      /* Texte secondaire Gmail (Gris foncé) */
+  --color-text-muted: #5e6278;          /* Texte atténué */
+  --color-danger: #b3261e;              /* Rouge Material 3 */
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-gmail);
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Utilitaires --- */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.shrink-0 { flex-shrink: 0; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.overflow-hidden { overflow: hidden; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-x-auto { overflow-x: auto; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.inset-0 { inset: 0; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-none { user-select: none; }
+.cursor-pointer { cursor: pointer; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 13px; }
+
+/* --- Layout Principal --- */
+.kanban-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-gmail);
+}
+
+/* --- En-tête (Gmail Title Bar Style) --- */
+.kanban-header {
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-primary-bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.logo-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.board-select {
+  font-family: 'Google Sans', Roboto, sans-serif;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+  max-width: 240px;
+}
+
+.board-select:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Sync Status Badge --- */
+.sync-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+
+.sync-dot.connected { background-color: #1a7f37; }
+.sync-dot.connecting { background-color: var(--color-primary); animation: pulse 1.2s infinite; }
+.sync-dot.offline { background-color: #b06000; }
+.sync-dot.error { background-color: var(--color-danger); }
+
+/* --- Boutons d'action Header --- */
+.btn-icon {
+  padding: 8px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-primary);
+}
+
+.btn-icon.danger:hover {
+  background-color: #fce8e6;
+  color: var(--color-danger);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Tab Switcher (Gmail Native Sub-Header Tabs Style) --- */
+.tab-switcher {
+  display: flex;
+  border-bottom: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  gap: 24px;
+}
+
+.tab-btn {
+  padding: 10px 4px;
+  border-radius: 0;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  background: none;
+  font-family: inherit;
+}
+
+.tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+  background: none;
+  box-shadow: none;
+}
+
+.tab-btn:not(.active):hover {
+  color: var(--color-text-primary);
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+
+/* --- Zone Principale --- */
+.kanban-main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--color-bg-gmail);
+}
+
+/* --- Colonnes Kanban (M3 Containers) --- */
+.view-kanban {
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+  height: 100%;
+  overflow-x: auto;
+}
+
+.kanban-column {
+  width: 290px;
+  min-width: 290px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-column);
+  border: none;
+  box-shadow: none;
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  height: 100%;
+  transition: all var(--transition-fast);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 4px 6px;
+  flex-shrink: 0;
+}
+
+.column-title {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.column-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background-color: #ffffff;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.badge-inprogress { color: var(--color-primary); border-color: rgba(11,87,208,0.25); background-color: var(--color-primary-bg); }
+.badge-done { color: #1a7f37; border-color: rgba(26,127,55,0.2); background-color: #e6f4ea; }
+
+/* --- Skeleton Loaders --- */
+.skeleton {
+  flex-shrink: 0;
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.skeleton-line {
+  background: #e9eef6;
+  border-radius: 4px;
+  animation: pulse 1.2s infinite;
+}
+
+.skeleton-line + .skeleton-line { margin-top: 8px; }
+.skeleton-line.w-25 { width: 25%; height: 10px; }
+.skeleton-line.w-33 { width: 33%; height: 10px; }
+.skeleton-line.w-75 { width: 75%; height: 14px; }
+.skeleton-line.w-85 { width: 85%; height: 10px; }
+
+/* --- Liste de cartes --- */
+.card-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+  min-height: 100px;
+}
+
+/* Scrollbars invisibles */
+.card-list::-webkit-scrollbar { display: none; }
+.card-list { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* --- Carte de tâche (Premium M3 Style) --- */
+.task-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.task-card:hover {
+  border-color: #c2e7ff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.task-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.96);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.tag-default { background: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
+.tag-urgent { background: #fce8e6; color: #c5221f; border-color: #fad2cf; }
+
+.card-title {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  transition: color var(--transition-fast);
+  line-height: 1.4;
+}
+
+.task-card:hover .card-title {
+  color: var(--color-primary);
+}
+
+.card-title.completed {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.card-desc {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.card-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-date svg {
+  width: 12px;
+  height: 12px;
+  color: var(--color-text-secondary);
+}
+
+.card-gmail-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.card-gmail-badge svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* --- Bouton "Ajouter une tâche" --- */
+.btn-add-task {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  font-family: inherit;
+}
+
+.btn-add-task:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}
+
+.btn-add-task svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --- Zone de Drop Active --- */
+.drag-over-active {
+  background-color: #e8f0fe !important;
+  border: 1px dashed var(--color-primary) !important;
+}
+
+/* --- Panneau d'Édition Coulissant --- */
+.editor-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.editor-panel {
+  width: 90%;
+  max-width: 380px;
+  background-color: #ffffff;
+  height: 100%;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  border-left: 1px solid var(--color-border);
+}
+
+.editor-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.editor-header h3 {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.btn-close-editor {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.btn-close-editor:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.editor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.editor-body > * + * { margin-top: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  font-family: inherit;
+  background: white;
+  color: var(--color-text-primary);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: var(--color-primary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* --- Gmail Context Card --- */
+.gmail-context {
+  background-color: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gmail-context-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gmail-context-header svg { width: 14px; height: 14px; color: var(--color-primary); }
+
+.gmail-context-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.gmail-context-subject {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.gmail-context-link {
+  font-size: 12px;
+  color: var(--color-primary);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.gmail-context-link:hover { text-decoration: underline; }
+.gmail-context-link svg { width: 12px; height: 12px; }
+
+/* --- Editor Footer --- */
+.editor-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  background-color: #ffffff;
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.btn-delete {
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-full);
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: none;
+}
+
+.btn-delete:hover { background-color: #fce8e6; border-color: transparent; }
+.btn-delete svg { width: 16px; height: 16px; }
+
+.btn-save {
+  flex: 1;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  font-family: inherit;
+}
+
+.btn-save:hover { background-color: var(--color-primary-hover); }
+
+/* --- Setup Wizard --- */
+.setup-wizard {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-bg-gmail);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.wizard-content {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+.wizard-content > * + * { margin-top: 20px; }
+
+.wizard-icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.wizard-icon svg { width: 24px; height: 24px; }
+
+.wizard-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.wizard-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  max-width: 320px;
+  margin: 6px auto 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.wizard-steps {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.wizard-steps > * + * { margin-top: 12px; }
+
+.wizard-steps-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.step-row {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.step-number {
+  font-weight: 500;
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+}
+
+.step-row a {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.step-row a:hover { text-decoration: underline; }
+
+.step-row code {
+  background: #f1f3f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  display: inline-block;
+  margin-top: 4px;
+  user-select: all;
+  word-break: break-all;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* --- Bouton Google --- */
+.btn-google {
+  width: 100%;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: inherit;
+}
+
+.btn-google:hover { background-color: #f8fafc; }
+.btn-google svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.wizard-footer-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* --- Gmail Toast --- */
+.gmail-toast {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  background-color: #1f1f1f;
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.2s ease-out;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.gmail-toast.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toast-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.toast-icon svg { width: 12px; height: 12px; }
+
+.toast-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-primary-bg);
+}
+
+.btn-close-toast {
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  padding: 2px;
+}
+
+.btn-close-toast:hover { color: white; }
+.btn-close-toast svg { width: 14px; height: 14px; }
+
+.toast-subject {
+  font-size: 12px;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.btn-toast-add {
+  width: 100%;
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  font-family: inherit;
+}
+
+.btn-toast-add:hover { background-color: var(--color-primary-hover); }
+
+/* --- Smart View --- */
+.view-smart {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.view-smart > * + * { margin-top: 20px; }
+
+.smart-section-title {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.smart-section-title.today { color: var(--color-danger); }
+.smart-section-title.week { color: var(--color-primary); }
+
+.smart-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.smart-dot.today { background: var(--color-danger); }
+.smart-dot.week { background: var(--color-primary); }
+
+.smart-empty {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 16px;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.smart-card {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 8px;
+}
+
+.smart-card:hover {
+  border-color: #c2e7ff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.smart-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  margin-top: 10px;
+}
+
+.smart-date-badge {
+  font-weight: 500;
+  color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.smart-column-badge {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: 9px;
+}
+
+/* --- Animations --- */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

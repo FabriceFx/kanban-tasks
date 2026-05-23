@@ -1,0 +1,52 @@
+{
+    "manifest_version": 3,
+    "name": "Kanban Tasks",
+    "version": "1.0.0",
+    "description": "Transformez vos listes Google Tasks en tableaux Kanban visuels dans Gmail.",
+    "permissions": [
+        "identity",
+        "storage"
+    ],
+    "oauth2": {
+        "client_id": "390216795652-85t7lgdn4isqqi8k48emjhlqrv0ld8qs.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/tasks"
+        ]
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_title": "Ouvrir Kanban Tasks (nouvel onglet)"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://mail.google.com/*"
+            ],
+            "js": [
+                "parser.js",
+                "content.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "kanban-embed.css",
+                "sidepanel.html",
+                "sidepanel.js",
+                "parser.js",
+                "tailwind.css"
+            ],
+            "matches": [
+                "https://mail.google.com/*"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    }
+}
