@@ -21,12 +21,13 @@ window.addEventListener("popstate", () => {
   if (isKanbanActive) hideKanban();
 });
 
-// Raccourci global Alt + K pour basculer la visibilité du Tableau Kanban
+// Raccourci global Alt/Option + K pour basculer la visibilité du Tableau Kanban
 window.addEventListener("keydown", (e) => {
   // Ignorer si l'utilisateur est en train de saisir du texte
   if (isUserTyping()) return;
 
-  if (e.altKey && (e.key === "k" || e.key === "K" || e.keyCode === 75)) {
+  // e.code est indépendant du système et fonctionne sur macOS (touche Option) et Windows/Linux (Alt)
+  if (e.altKey && (e.code === "KeyK" || e.key === "k" || e.key === "K" || e.keyCode === 75)) {
     e.preventDefault();
     if (isKanbanActive) {
       hideKanban();

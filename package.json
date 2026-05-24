@@ -7,7 +7,8 @@
   "scripts": {
     "test": "vitest run",
     "build": "esbuild src/content.js src/sidepanel.js --bundle --outdir=. --minify",
-    "watch": "esbuild src/content.js src/sidepanel.js --bundle --outdir=."
+    "watch": "esbuild src/content.js src/sidepanel.js --bundle --outdir=.",
+    "package": "./package-extension.sh"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",

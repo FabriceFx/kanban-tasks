@@ -4,7 +4,7 @@
  * Gère la boucle de MutationObserver de Gmail avec throttle de 100ms et verrou asynchrone.
  */
 
-import { getEmailDetails, injectKanbanButton, injectSidebarButton } from "./dom-injector.js";
+import { injectSidebarButton } from "./dom-injector.js";
 import { isKanbanActive, showKanban, syncKanbanVisibility } from "./kanban-ui.js";
 
 export let isPerformingMutation = false;
@@ -44,13 +44,6 @@ export function safeInject() {
   isPerformingMutation = true;
   
   try {
-    const emailDetails = getEmailDetails();
-    if (emailDetails) {
-      injectKanbanButton();
-    } else {
-      const buttons = document.querySelectorAll(".gmail-kanban-trigger-class");
-      buttons.forEach(btn => btn.remove());
-    }
     injectSidebarButton();
     
     // Si le Kanban est censé être ouvert, vérifier s'il est toujours présent et dans le bon parent

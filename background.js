@@ -119,4 +119,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     })();
     return true;
   }
+
+  // Ouvrir le sidepanel en plein écran dans un nouvel onglet
+  if (message.type === "OPEN_FULLSCREEN") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel.html") });
+    return true;
+  }
 });

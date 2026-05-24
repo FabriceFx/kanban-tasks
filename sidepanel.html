@@ -95,7 +95,7 @@
         </div>
         <div class="flex flex-col">
           <select id="board-select" class="font-bold text-gray-800 bg-transparent border-none outline-none text-[15px] cursor-pointer hover:bg-gray-100/50 px-2 py-0.5 rounded-lg transition-all max-w-[170px] truncate">
-            <option value="" disabled selected>Chargement...</option>
+            <option value="" disabled selected data-i18n="loading">Chargement...</option>
           </select>
         </div>
       </div>
@@ -104,18 +104,18 @@
         <!-- Badge de Statut de Connexion minimalist et propre -->
         <div id="sync-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold bg-white/80 border border-gray-100 shadow-sm text-gray-500 transition-all duration-300">
           <span class="w-2 h-2 rounded-full bg-gray-400 block" id="sync-dot"></span>
-          <span id="sync-text">Synchro...</span>
+          <span id="sync-text" data-i18n="syncing">Synchro...</span>
         </div>
         
         <!-- Bouton Déconnexion -->
-        <button id="btn-logout" class="p-2 hover:bg-red-50 hover:text-red-500 rounded-xl text-gray-400 transition-all duration-200 hidden" title="Se déconnecter">
+        <button id="btn-logout" class="p-2 hover:bg-red-50 hover:text-red-500 rounded-xl text-gray-400 transition-all duration-200 hidden" title="Se déconnecter" data-i18n-title="logout">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
           </svg>
         </button>
 
         <!-- Bouton Agrandir en plein écran -->
-        <button id="btn-fullscreen" class="p-2 hover:bg-blue-50 hover:text-blue-600 rounded-xl text-gray-400 transition-all duration-200" title="Agrandir en plein écran">
+        <button id="btn-fullscreen" class="p-2 hover:bg-blue-50 hover:text-blue-600 rounded-xl text-gray-400 transition-all duration-200" title="Agrandir en plein écran" data-i18n-title="fullscreen">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m5.25 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15"></path>
           </svg>
@@ -126,10 +126,10 @@
     <!-- Sélecteur d'onglets au design moderne sans bordures agressives -->
     <div class="flex border-b border-gray-100/50 text-[13px] bg-gray-50/50 p-1 rounded-xl">
       <button id="tab-kanban" class="flex-1 py-1.5 rounded-lg flex items-center justify-center gap-2 font-bold bg-white text-[#0b57d0] shadow-sm transition-all duration-200">
-        Tableau Kanban
+        <span data-i18n="tab_kanban">Tableau Kanban</span>
       </button>
       <button id="tab-smart" class="flex-1 py-1.5 rounded-lg flex items-center justify-center gap-2 font-bold text-gray-500 hover:text-gray-800 transition-all duration-200">
-        Objectif Travail
+        <span data-i18n="tab_smart">Objectifs du jour</span>
       </button>
     </div>
   </header>
@@ -147,50 +147,59 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-gray-800 tracking-tight">Accès à vos tâches Google</h2>
-          <p class="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
-            Pour stocker de façon décentralisée et gratuite vos données, vous devez lier votre propre clé OAuth2 sécurisée.
+          <h2 class="text-xl font-bold text-gray-800 tracking-tight" data-i18n="setup_title">Accès à vos tâches Google</h2>
+          <p class="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed" data-i18n="setup_desc">
+            Visualisez et gérez vos tâches Google Tasks dans un tableau Kanban intuitif et fluide directement intégré.
           </p>
         </div>
 
-        <div class="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm space-y-4">
-          <h3 class="text-[11px] font-bold text-[#0b57d0] uppercase tracking-wider">🛠️ Étape de configuration rapide</h3>
-          
-          <div class="space-y-3.5 text-xs text-gray-600">
-            <div class="flex gap-3">
-              <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">1</span>
-              <p class="leading-relaxed">Copiez l'ID d'extension généré :<br>
-                <code id="extension-id-display" class="bg-gray-50 px-2.5 py-1.5 rounded-lg font-mono text-[10px] inline-block mt-1.5 font-bold select-all break-all border border-gray-100 text-gray-700">Chargement...</code>
-              </p>
-            </div>
-            
-            <div class="flex gap-3">
-              <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">2</span>
-              <p class="leading-relaxed">Dans votre <a href="https://console.cloud.google.com" target="_blank" class="text-blue-600 hover:underline font-semibold">Google Console</a>, créez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.</p>
-            </div>
-            
-            <div class="flex gap-3">
-              <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">3</span>
-              <p class="leading-relaxed">Activer la <strong>Google Tasks API</strong> et insérez votre clé <strong>client_id</strong> dans le fichier <strong>manifest.json</strong>.</p>
-            </div>
-          </div>
-        </div>
-
         <div class="space-y-3">
-          <button id="btn-login" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-3 rounded-2xl text-[13px] border border-gray-200 transition-all shadow-sm flex items-center justify-center gap-2.5">
+          <button id="btn-login" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-2xl text-[13px] border border-gray-200 transition-all shadow-sm flex items-center justify-center gap-2.5">
             <svg class="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
             </svg>
-            Se connecter avec Google
+            <span data-i18n="login_google">Se connecter avec Google</span>
           </button>
           
-          <p class="text-[10px] text-gray-400 text-center leading-relaxed">
-            Vos données de tâches transitent uniquement entre Chrome et les serveurs sécurisés de Google.
-          </p>
         </div>
+
+        <!-- Zone d'affichage des erreurs d'authentification (Masquée par défaut) -->
+        <div id="auth-error-display" class="hidden text-xs text-red-600 bg-red-50 border border-red-100 rounded-2xl p-3 text-center leading-relaxed font-medium">
+        </div>
+
+        <details class="bg-white border border-gray-100 rounded-3xl transition-all duration-200">
+          <summary class="text-[11px] font-bold text-gray-500 cursor-pointer p-4 select-none flex items-center justify-between outline-none">
+            <span data-i18n="setup_dev_title">⚙️ Configuration manuelle (Développeurs)</span>
+            <svg class="w-3.5 h-3.5 transform transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+            </svg>
+          </summary>
+          <div class="p-5 border-t border-gray-50 space-y-4">
+            <h3 class="text-[11px] font-bold text-[#0b57d0] uppercase tracking-wider" data-i18n="setup_step_title">🛠️ Étape de configuration rapide</h3>
+            
+            <div class="space-y-3.5 text-xs text-gray-600">
+              <div class="flex gap-3">
+                <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">1</span>
+                <p class="leading-relaxed"><span data-i18n="setup_step_1">Copiez l'ID d'extension généré :</span><br>
+                  <code id="extension-id-display" class="bg-gray-50 px-2.5 py-1.5 rounded-lg font-mono text-[10px] inline-block mt-1.5 font-bold select-all break-all border border-gray-100 text-gray-700" data-i18n="loading">Chargement...</code>
+                </p>
+              </div>
+              
+              <div class="flex gap-3">
+                <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">2</span>
+                <p class="leading-relaxed" data-i18n="setup_step_2">Dans votre <a href="https://console.cloud.google.com" target="_blank" class="text-blue-600 hover:underline font-semibold">Google Console</a>, créez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.</p>
+              </div>
+              
+              <div class="flex gap-3">
+                <span class="font-bold text-blue-500 bg-blue-50 w-5 h-5 rounded-full flex items-center justify-center shrink-0">3</span>
+                <p class="leading-relaxed" data-i18n="setup_step_3">Activer la <strong>Google Tasks API</strong> et insérez votre clé <strong>client_id</strong> dans le fichier <strong>manifest.json</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -203,7 +212,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
             </svg>
           </div>
-          <span class="text-[10px] font-extrabold uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md text-blue-300">E-mail ouvert</span>
+          <span class="text-[10px] font-extrabold uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md text-blue-300" data-i18n="toast_email_opened">E-mail ouvert</span>
         </div>
         <button id="btn-close-toast" class="text-gray-400 hover:text-white pointer-events-auto transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -212,7 +221,7 @@
         </button>
       </div>
       <p id="gmail-toast-subject" class="text-xs font-semibold truncate leading-tight text-white/95"></p>
-      <button id="btn-add-gmail-task" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all pointer-events-auto text-center self-end shadow-md shadow-blue-600/10">
+      <button id="btn-add-gmail-task" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition-all pointer-events-auto text-center self-end shadow-md shadow-blue-600/10" data-i18n="gmail_toast_btn_create">
         Créer une tâche Kanban
       </button>
     </div>
@@ -223,7 +232,7 @@
       <!-- Colonne : À FAIRE -->
       <div id="col-todo-container" class="w-[280px] shrink-0 flex flex-col kanban-col rounded-3xl p-3.5 h-full snap-start transition-all duration-200">
         <div class="flex items-center justify-between mb-3 px-1.5 shrink-0">
-          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest">À faire</span>
+          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest" data-i18n="col_todo">À faire</span>
           <span id="badge-todo" class="bg-white/80 border border-gray-100 text-gray-600 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">0</span>
         </div>
         
@@ -244,14 +253,14 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
           </svg>
-          Ajouter une tâche
+          <span data-i18n="btn_add_task">Ajouter une tâche</span>
         </button>
       </div>
 
       <!-- Colonne : EN COURS -->
       <div id="col-inprogress-container" class="w-[280px] shrink-0 flex flex-col kanban-col rounded-3xl p-3.5 h-full snap-start transition-all duration-200">
         <div class="flex items-center justify-between mb-3 px-1.5 shrink-0">
-          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest">En cours</span>
+          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest" data-i18n="col_in_progress">En cours</span>
           <span id="badge-inprogress" class="bg-blue-50 text-blue-600 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-blue-100 shadow-sm">0</span>
         </div>
         
@@ -270,15 +279,18 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
           </svg>
-          Ajouter une tâche
+          <span data-i18n="btn_add_task">Ajouter une tâche</span>
         </button>
       </div>
 
       <!-- Colonne : TERMINÉ -->
       <div id="col-done-container" class="w-[280px] shrink-0 flex flex-col kanban-col rounded-3xl p-3.5 h-full snap-start transition-all duration-200">
         <div class="flex items-center justify-between mb-3 px-1.5 shrink-0">
-          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest">Terminé</span>
-          <span id="badge-done" class="bg-green-50 text-green-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-green-100 shadow-sm">0</span>
+          <span class="font-bold text-[11px] text-gray-500 uppercase tracking-widest" data-i18n="col_done">Terminé</span>
+          <div class="flex items-center gap-2">
+            <button id="btn-archive-done" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 transition-all hidden" data-i18n="btn_archive" title="Archiver toutes les tâches terminées">Archiver</button>
+            <span id="badge-done" class="bg-green-50 text-green-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-green-100 shadow-sm">0</span>
+          </div>
         </div>
         
         <!-- SQUELETTE DE CHARGEMENT POUR TERMINÉ -->
@@ -295,7 +307,7 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
           </svg>
-          Ajouter une tâche
+          <span data-i18n="btn_add_task">Ajouter une tâche</span>
         </button>
       </div>
 
@@ -305,19 +317,19 @@
     <div id="view-smart" class="hidden p-5 h-full overflow-y-auto space-y-6">
       <div>
         <h2 class="text-[11px] font-bold text-red-500 flex items-center gap-2 mb-3.5 uppercase tracking-widest">
-          <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse inline-block"></span> Aujourd'hui
+          <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse inline-block"></span> <span data-i18n="smart_today">Aujourd'hui</span>
         </h2>
         <div class="space-y-3" id="smart-today">
-          <p class="text-xs text-gray-400 text-center py-4 bg-white/60 rounded-2xl border border-gray-100">Aucune tâche planifiée.</p>
+          <p class="text-xs text-gray-400 text-center py-4 bg-white/60 rounded-2xl border border-gray-100" data-i18n="smart_no_tasks">Aucune tâche planifiée.</p>
         </div>
       </div>
 
       <div>
         <h2 class="text-[11px] font-bold text-blue-500 flex items-center gap-2 mb-3.5 uppercase tracking-widest">
-          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Cette semaine
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> <span data-i18n="smart_week">Cette semaine</span>
         </h2>
         <div class="space-y-3" id="smart-week">
-          <p class="text-xs text-gray-400 text-center py-4 bg-white/60 rounded-2xl border border-gray-100">Aucune tâche planifiée.</p>
+          <p class="text-xs text-gray-400 text-center py-4 bg-white/60 rounded-2xl border border-gray-100" data-i18n="smart_no_tasks">Aucune tâche planifiée.</p>
         </div>
       </div>
     </div>
@@ -326,8 +338,8 @@
     <div id="editor-panel" class="absolute inset-0 bg-slate-900/25 backdrop-blur-sm z-40 flex justify-end hidden">
       <div class="w-[90%] max-w-[380px] bg-white/95 backdrop-blur-xl h-full shadow-2xl flex flex-col animate-slide-in border-l border-white/20">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white/80">
-          <h3 class="font-bold text-sm text-gray-800">Détails de la tâche</h3>
-          <button id="btn-close-editor" class="text-gray-400 hover:text-gray-700 text-xs px-3 py-1.5 hover:bg-gray-100 rounded-xl transition-all font-bold">
+          <h3 class="font-bold text-sm text-gray-800" data-i18n="editor_details_title">Détails de la tâche</h3>
+          <button id="btn-close-editor" class="text-gray-400 hover:text-gray-700 text-xs px-3 py-1.5 hover:bg-gray-100 rounded-xl transition-all font-bold" data-i18n="btn_cancel">
             Fermer
           </button>
         </div>
@@ -337,33 +349,45 @@
           <input type="hidden" id="edit-id">
           
           <div>
-            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Titre</label>
-            <input type="text" id="edit-title" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold" placeholder="Nommez votre tâche...">
+            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_title_label">Titre</label>
+            <input type="text" id="edit-title" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold" placeholder="Nommez votre tâche..." data-i18n-placeholder="editor_title_placeholder">
           </div>
 
           <div>
-            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
-            <textarea id="edit-desc" rows="4" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all leading-relaxed" placeholder="Rédigez des détails ou consignes..."></textarea>
+            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_desc_label">Description</label>
+            <textarea id="edit-desc" rows="4" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all leading-relaxed" placeholder="Rédigez des détails ou consignes..." data-i18n-placeholder="editor_desc_placeholder"></textarea>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Échéance</label>
+              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_date_label">Échéance</label>
               <input type="date" id="edit-date" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-white cursor-pointer font-medium text-gray-700">
             </div>
             <div>
-              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Statut</label>
+              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_status_label">Statut</label>
               <select id="edit-status" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-white cursor-pointer font-bold text-gray-700">
-                <option value="todo">À faire</option>
-                <option value="inprogress">En cours</option>
-                <option value="done">Terminé</option>
+                <option value="todo" data-i18n="col_todo">À faire</option>
+                <option value="inprogress" data-i18n="col_in_progress">En cours</option>
+                <option value="done" data-i18n="col_done">Terminé</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Étiquettes (séparées par virgules)</label>
-            <input type="text" id="edit-tags" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all" placeholder="ex: Urgent, Projet client">
+            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_tags_label">Étiquettes (séparées par virgules)</label>
+            <input type="text" id="edit-tags" class="w-full border border-gray-150 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all" placeholder="ex: Urgent, Projet client" data-i18n-placeholder="editor_tags_placeholder">
+          </div>
+
+          <!-- Section des sous-tâches -->
+          <div class="border-t border-gray-100 pt-4" id="subtasks-section">
+            <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="editor_subtasks_label">Sous-tâches</label>
+            <div id="subtasks-container" class="space-y-2 max-h-[160px] overflow-y-auto pr-1 no-scrollbar">
+              <!-- Rempli dynamiquement -->
+            </div>
+            <div class="flex gap-2 mt-3">
+              <input type="text" id="new-subtask-title" class="flex-1 border border-gray-150 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500 transition-all" placeholder="Ajouter une sous-tâche..." data-i18n-placeholder="editor_new_subtask_placeholder">
+              <button id="btn-add-subtask" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-all shrink-0" data-i18n="btn_add">Ajouter</button>
+            </div>
           </div>
 
           <!-- Contexte Gmail si la tâche y est liée -->
@@ -372,11 +396,11 @@
               <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
-              <span class="text-[9px] font-extrabold text-blue-600 uppercase tracking-widest">E-mail Gmail d'origine</span>
+              <span class="text-[9px] font-extrabold text-blue-600 uppercase tracking-widest" data-i18n="editor_gmail_context_label">E-mail Gmail d'origine</span>
             </div>
             <p id="gmail-subject" class="text-xs font-bold text-gray-800 truncate leading-snug"></p>
             <a id="gmail-link" href="#" target="_blank" class="w-fit text-xs text-[#0b57d0] hover:text-blue-700 font-extrabold flex items-center gap-1">
-              Consulter l'e-mail dans Gmail
+              <span data-i18n="editor_view_gmail_link">Consulter l'e-mail dans Gmail</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
               </svg>
@@ -385,13 +409,13 @@
         </div>
 
         <div class="p-4 border-t border-gray-100/50 bg-gray-50/80 flex gap-3.5 shrink-0">
-          <button id="btn-delete-task" class="px-3.5 py-3 border border-red-200/80 hover:bg-red-50 text-red-500 rounded-2xl text-xs transition-all flex items-center justify-center shrink-0" title="Supprimer la tâche">
+          <button id="btn-delete-task" class="px-3.5 py-3 border border-red-200/80 hover:bg-red-50 text-red-500 rounded-2xl text-xs transition-all flex items-center justify-center shrink-0" title="Supprimer la tâche" data-i18n-title="btn_delete_task">
             <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
           </button>
           
-          <button id="btn-save-changes" class="flex-1 bg-[#0b57d0] hover:bg-[#0a4ec0] text-white font-bold py-3 rounded-2xl text-xs transition-all shadow-md shadow-blue-500/10">
+          <button id="btn-save-changes" class="flex-1 bg-[#0b57d0] hover:bg-[#0a4ec0] text-white font-bold py-3 rounded-2xl text-xs transition-all shadow-md shadow-blue-500/10" data-i18n="editor_btn_save">
             Enregistrer les modifications
           </button>
         </div>

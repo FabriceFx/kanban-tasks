@@ -42,7 +42,8 @@ export const DEFAULT_METADATA = {
   subtasks: [],
   gmailId: null,
   gmailSubject: null,
-  gmailUrl: null
+  gmailUrl: null,
+  archived: false
 };
 
 /**
@@ -90,13 +91,16 @@ export function validateMetadata(rawObj) {
     gmailUrl = rawObj.gmailUrl.trim();
   }
 
+  const archived = Boolean(rawObj.archived);
+
   return {
     columnId,
     tags,
     subtasks,
     gmailId,
     gmailSubject,
-    gmailUrl
+    gmailUrl,
+    archived
   };
 }
 
@@ -150,7 +154,9 @@ export function serializeTaskNotes(description, metadata) {
   const cleanDescription = description ? description.trim() : "";
   const cleanMetadata = validateMetadata(metadata);
   const jsonString = JSON.stringify(cleanMetadata, null, 2);
-  return `${cleanDescription}${METADATA_DELIMITER}${jsonString}`;
+  // Ajoute beaucoup de lignes vides pour masquer le bloc dans l'interface Google Tasks standard
+  const padding = "\n".repeat(30);
+  return `${cleanDescription}${padding}${METADATA_DELIMITER}${jsonString}`;
 }
 
 /**

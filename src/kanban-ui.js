@@ -7,6 +7,75 @@
 
 import { parseTaskNotes, serializeTaskNotes, isConfigTask } from "./parser.js";
 
+// --- Traduction / Internationalisation ---
+function getMessage(key, defaultValue = "") {
+  if (typeof chrome !== "undefined" && chrome.i18n) {
+    return chrome.i18n.getMessage(key) || defaultValue;
+  }
+  return defaultValue;
+}
+
+function localizeDOM(root = document) {
+  root.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    const message = chrome.i18n.getMessage(key);
+    if (message) {
+      if (key === "setup_step_2" || key === "setup_step_3") {
+        el.innerHTML = message;
+      } else {
+        el.textContent = message;
+      }
+    }
+  });
+  root.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    const message = chrome.i18n.getMessage(key);
+    if (message) el.placeholder = message;
+  });
+  root.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const key = el.getAttribute("data-i18n-title");
+    const message = chrome.i18n.getMessage(key);
+    if (message) el.title = message;
+  });
+}
+
+// Surcharge de alert pour la traduction automatique
+const originalAlert = window.alert;
+window.alert = function(msg) {
+  const alertMap = {
+    "Impossible de modifier la tâche en mode hors-ligne. Veuillez rétablir votre connexion internet.": "alert_offline_modify_task",
+    "Échec de la synchronisation avec Google Tasks. La tâche a été replacée à sa position d'origine.": "alert_sync_failed_rollback",
+    "Impossible d'ajouter une tâche en mode hors-ligne.": "alert_offline_add_task",
+    "Impossible de modifier la tâche en mode hors-ligne.": "alert_offline_edit_task",
+    "Échec de la sauvegarde sur Google Tasks. Les modifications ont été annulées.": "alert_save_failed_rollback",
+    "Impossible de supprimer la tâche en mode hors-ligne.": "alert_offline_delete_task",
+    "Impossible de lier un e-mail en mode hors-ligne.": "alert_offline_link_email",
+    "Une erreur est survenue lors de l'archivage avec Google Tasks. Certaines tâches ont été restaurées.": "alert_archive_failed_rollback"
+  };
+  const key = alertMap[msg];
+  const localizedMsg = key ? getMessage(key, msg) : msg;
+  originalAlert(localizedMsg);
+};
+
+// Surcharge de confirm pour la traduction automatique
+const originalConfirm = window.confirm;
+window.confirm = function(msg) {
+  const confirmMap = {
+    "Voulez-vous vraiment supprimer définitivement cette tâche ?": "delete_confirm"
+  };
+  
+  let localizedMsg = msg;
+  if (confirmMap[msg]) {
+    localizedMsg = getMessage(confirmMap[msg], msg);
+  } else if (msg.startsWith("Voulez-vous archiver ces")) {
+    const match = msg.match(/\d+/);
+    const count = match ? match[0] : "0";
+    localizedMsg = getMessage("archive_confirm_plural", [count]) || msg;
+  }
+  
+  return originalConfirm(localizedMsg);
+};
+
 // ============================================================================
 // ÉTAT GLOBAL DE L'APPLICATION KANBAN (Partagé dans ce module)
 // ============================================================================
@@ -38,20 +107,20 @@ function getKanbanHTML() {
             </svg>
           </div>
           <select id="board-select" class="board-select">
-            <option value="" disabled selected>Chargement...</option>
+            <option value="" disabled selected data-i18n="loading">Chargement...</option>
           </select>
         </div>
         <div class="header-actions">
           <div id="sync-status" class="sync-badge">
             <span class="sync-dot" id="sync-dot"></span>
-            <span id="sync-text">Synchro...</span>
+            <span id="sync-text" data-i18n="syncing">Synchro...</span>
           </div>
-          <button id="btn-logout" class="btn-icon danger hidden" title="Se déconnecter">
+          <button id="btn-logout" class="btn-icon danger hidden" title="Se déconnecter" data-i18n-title="logout">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
           </button>
-          <button id="btn-fullscreen" class="btn-icon" title="Ouvrir dans un nouvel onglet">
+          <button id="btn-fullscreen" class="btn-icon" title="Ouvrir dans un nouvel onglet" data-i18n-title="open_new_tab">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
             </svg>
@@ -60,8 +129,8 @@ function getKanbanHTML() {
       </div>
 
       <div class="tab-switcher">
-        <button id="tab-kanban" class="tab-btn active">Tableau Kanban</button>
-        <button id="tab-smart" class="tab-btn">Objectif Travail</button>
+        <button id="tab-kanban" class="tab-btn active" data-i18n="tab_kanban">Tableau Kanban</button>
+        <button id="tab-smart" class="tab-btn" data-i18n="tab_smart">Objectifs du jour</button>
       </div>
     </header>
 
@@ -77,26 +146,10 @@ function getKanbanHTML() {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
               </svg>
             </div>
-            <h2 class="wizard-title">Accès à vos tâches Google</h2>
-            <p class="wizard-desc">Pour stocker de façon décentralisée et gratuite vos données, vous devez lier votre propre clé OAuth2 sécurisée.</p>
+            <h2 class="wizard-title" data-i18n="setup_title">Accès à vos tâches Google</h2>
+            <p class="wizard-desc" data-i18n="setup_desc">Visualisez et gérez vos tâches Google Tasks dans un tableau Kanban intuitif et fluide directement intégré.</p>
           </div>
-
-          <div class="wizard-steps">
-            <h3 class="wizard-steps-title">🛠️ Étape de configuration rapide</h3>
-            <div class="step-row">
-              <span class="step-number">1</span>
-              <p>Copiez l'ID d'extension généré :<br><code id="extension-id-display">Chargement...</code></p>
-            </div>
-            <div class="step-row">
-              <span class="step-number">2</span>
-              <p>Dans votre <a href="https://console.cloud.google.com" target="_blank">Google Console</a>, créez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.</p>
-            </div>
-            <div class="step-row">
-              <span class="step-number">3</span>
-              <p>Activer la <strong>Google Tasks API</strong> et insérez votre clé <strong>client_id</strong> dans le fichier <strong>manifest.json</strong>.</p>
-            </div>
-          </div>
-
+ 
           <div>
             <button id="btn-login" class="btn-google">
               <svg viewBox="0 0 24 24">
@@ -105,10 +158,12 @@ function getKanbanHTML() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
               </svg>
-              Se connecter avec Google
+              <span data-i18n="login_google">Se connecter avec Google</span>
             </button>
-            <p class="wizard-footer-text" style="margin-top: 12px;">Vos données de tâches transitent uniquement entre Chrome et les serveurs sécurisés de Google.</p>
+            <p class="wizard-footer-text" style="margin-top: 12px;" data-i18n="setup_footer">Vos données de tâches transitent uniquement entre Chrome et les serveurs sécurisés de Google.</p>
           </div>
+
+          <div id="auth-error-display" class="auth-error-display"></div>
         </div>
       </div>
 
@@ -121,7 +176,7 @@ function getKanbanHTML() {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
             </div>
-            <span class="toast-label">E-mail ouvert</span>
+            <span class="toast-label" data-i18n="toast_email_opened">E-mail ouvert</span>
           </div>
           <button id="btn-close-toast" class="btn-close-toast">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -130,7 +185,7 @@ function getKanbanHTML() {
           </button>
         </div>
         <p id="gmail-toast-subject" class="toast-subject"></p>
-        <button id="btn-add-gmail-task" class="btn-toast-add">Créer une tâche Kanban</button>
+        <button id="btn-add-gmail-task" class="btn-toast-add" data-i18n="gmail_toast_btn_create">Créer une tâche Kanban</button>
       </div>
 
       <!-- VUE KANBAN -->
@@ -138,7 +193,7 @@ function getKanbanHTML() {
         <!-- Colonne À FAIRE -->
         <div id="col-todo-container" class="kanban-column">
           <div class="column-header">
-            <span class="column-title">À faire</span>
+            <span class="column-title" data-i18n="col_todo">À faire</span>
             <span id="badge-todo" class="column-badge badge-todo">0</span>
           </div>
           <div id="skeleton-todo" class="skeleton hidden">
@@ -153,14 +208,14 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            <span data-i18n="btn_add_task">Ajouter une tâche</span>
           </button>
         </div>
 
         <!-- Colonne EN COURS -->
         <div id="col-inprogress-container" class="kanban-column">
           <div class="column-header">
-            <span class="column-title">En cours</span>
+            <span class="column-title" data-i18n="col_in_progress">En cours</span>
             <span id="badge-inprogress" class="column-badge badge-inprogress">0</span>
           </div>
           <div id="skeleton-inprogress" class="skeleton hidden">
@@ -174,15 +229,18 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            <span data-i18n="btn_add_task">Ajouter une tâche</span>
           </button>
         </div>
 
         <!-- Colonne TERMINÉ -->
         <div id="col-done-container" class="kanban-column">
           <div class="column-header">
-            <span class="column-title">Terminé</span>
-            <span id="badge-done" class="column-badge badge-done">0</span>
+            <span class="column-title" data-i18n="col_done">Terminé</span>
+            <div class="flex items-center gap-2">
+              <button id="btn-archive-done" class="column-badge" style="color: #1a7f37; border-color: rgba(26,127,55,0.2); background-color: #e6f4ea; cursor: pointer; display: none;" data-i18n="btn_archive" title="Archiver toutes les tâches terminées">Archiver</button>
+              <span id="badge-done" class="column-badge badge-done">0</span>
+            </div>
           </div>
           <div id="skeleton-done" class="skeleton hidden">
             <div class="skeleton-card">
@@ -194,7 +252,7 @@ function getKanbanHTML() {
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
             </svg>
-            Ajouter une tâche
+            <span data-i18n="btn_add_task">Ajouter une tâche</span>
           </button>
         </div>
       </div>
@@ -203,18 +261,18 @@ function getKanbanHTML() {
       <div id="view-smart" class="view-smart hidden">
         <div>
           <h2 class="smart-section-title today">
-            <span class="smart-dot today"></span> Aujourd'hui
+            <span class="smart-dot today"></span> <span data-i18n="smart_today">Aujourd'hui</span>
           </h2>
           <div id="smart-today">
-            <p class="smart-empty">Aucune tâche planifiée pour aujourd'hui.</p>
+            <p class="smart-empty" data-i18n="smart_no_tasks">Aucune tâche planifiée pour aujourd'hui.</p>
           </div>
         </div>
         <div>
           <h2 class="smart-section-title week">
-            <span class="smart-dot week"></span> Cette semaine
+            <span class="smart-dot week"></span> <span data-i18n="smart_week">Cette semaine</span>
           </h2>
           <div id="smart-week">
-            <p class="smart-empty">Aucune tâche planifiée pour cette semaine.</p>
+            <p class="smart-empty" data-i18n="smart_no_tasks">Aucune tâche planifiée pour cette semaine.</p>
           </div>
         </div>
       </div>
@@ -223,47 +281,55 @@ function getKanbanHTML() {
       <div id="editor-panel" class="editor-overlay hidden">
         <div class="editor-panel">
           <div class="editor-header">
-            <h3>Détails de la tâche</h3>
-            <button id="btn-close-editor" class="btn-close-editor">Fermer</button>
+            <h3 data-i18n="editor_details_title">Détails de la tâche</h3>
+            <button id="btn-close-editor" class="btn-close-editor" data-i18n="btn_cancel">Fermer</button>
           </div>
           <div class="editor-body">
             <input type="hidden" id="edit-id">
             <div>
-              <label class="form-label">Titre</label>
-              <input type="text" id="edit-title" class="form-input" placeholder="Nommez votre tâche...">
+              <label class="form-label" data-i18n="editor_title_label">Titre</label>
+              <input type="text" id="edit-title" class="form-input" placeholder="Nommez votre tâche..." data-i18n-placeholder="editor_title_placeholder">
             </div>
             <div>
-              <label class="form-label">Description</label>
-              <textarea id="edit-desc" rows="4" class="form-textarea" placeholder="Rédigez des détails ou consignes..."></textarea>
+              <label class="form-label" data-i18n="editor_desc_label">Description</label>
+              <textarea id="edit-desc" rows="4" class="form-textarea" placeholder="Rédigez des détails ou consignes..." data-i18n-placeholder="editor_desc_placeholder"></textarea>
             </div>
             <div class="form-row">
               <div>
-                <label class="form-label">Échéance</label>
+                <label class="form-label" data-i18n="editor_date_label">Échéance</label>
                 <input type="date" id="edit-date" class="form-input">
               </div>
               <div>
-                <label class="form-label">Statut</label>
+                <label class="form-label" data-i18n="editor_status_label">Statut</label>
                 <select id="edit-status" class="form-select">
-                  <option value="todo">À faire</option>
-                  <option value="inprogress">En cours</option>
-                  <option value="done">Terminé</option>
+                  <option value="todo" data-i18n="col_todo">À faire</option>
+                  <option value="inprogress" data-i18n="col_in_progress">En cours</option>
+                  <option value="done" data-i18n="col_done">Terminé</option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="form-label">Étiquettes (séparées par virgules)</label>
-              <input type="text" id="edit-tags" class="form-input" placeholder="ex: Urgent, Projet client">
+              <label class="form-label" data-i18n="editor_tags_label">Étiquettes (séparées par virgules)</label>
+              <input type="text" id="edit-tags" class="form-input" placeholder="ex: Urgent, Projet client" data-i18n-placeholder="editor_tags_placeholder">
+            </div>
+            <div class="subtasks-section" id="subtasks-section">
+              <label class="form-label" data-i18n="editor_subtasks_label">Sous-tâches</label>
+              <div id="subtasks-container"></div>
+              <div class="flex gap-2" style="margin-top: 12px;">
+                <input type="text" id="new-subtask-title" class="form-input" placeholder="Ajouter une sous-tâche..." style="flex: 1;" data-i18n-placeholder="editor_new_subtask_placeholder">
+                <button id="btn-add-subtask" class="btn-save" style="width: auto; padding: 8px 16px; border-radius: 8px; flex-shrink: 0; font-size: 11px;" data-i18n="btn_add" disabled>Ajouter</button>
+              </div>
             </div>
             <div id="gmail-context" class="gmail-context hidden">
               <div class="gmail-context-header">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
-                <span class="gmail-context-label">E-mail Gmail d'origine</span>
+                <span class="gmail-context-label" data-i18n="editor_gmail_context_label">E-mail Gmail d'origine</span>
               </div>
               <p id="gmail-subject" class="gmail-context-subject"></p>
               <a id="gmail-link" href="#" target="_blank" class="gmail-context-link">
-                Consulter l'e-mail dans Gmail
+                <span data-i18n="editor_view_gmail_link">Consulter l'e-mail dans Gmail</span>
                 <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"></path>
                 </svg>
@@ -271,12 +337,12 @@ function getKanbanHTML() {
             </div>
           </div>
           <div class="editor-footer">
-            <button id="btn-delete-task" class="btn-delete" title="Supprimer la tâche">
+            <button id="btn-delete-task" class="btn-delete" title="Supprimer la tâche" data-i18n-title="btn_delete_task">
               <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
             </button>
-            <button id="btn-save-changes" class="btn-save">Enregistrer les modifications</button>
+            <button id="btn-save-changes" class="btn-save" data-i18n="editor_btn_save">Enregistrer les modifications</button>
           </div>
         </div>
       </div>
@@ -376,6 +442,7 @@ export function showKanban() {
     const wrapper = document.createElement("div");
     wrapper.innerHTML = getKanbanHTML();
     kanbanShadowRoot.appendChild(wrapper.firstElementChild);
+    localizeDOM(kanbanShadowRoot);
 
     mainPane.appendChild(embedContainer);
 
@@ -452,50 +519,62 @@ export function initKanbanApp() {
 
 function setupKanbanEventListeners() {
   // Onglets
-  $("tab-kanban").addEventListener("click", () => switchTab("kanban"));
-  $("tab-smart").addEventListener("click", () => switchTab("smart"));
+  $("tab-kanban")?.addEventListener("click", () => switchTab("kanban"));
+  $("tab-smart")?.addEventListener("click", () => switchTab("smart"));
 
   // Sélecteur de board
-  $("board-select").addEventListener("change", (e) => {
+  $("board-select")?.addEventListener("change", (e) => {
     activeListId = e.target.value;
     chrome.storage.local.set({ activeListId });
     loadTasks(activeListId);
   });
 
   // Boutons d'ajout rapide
-  $("btn-add-todo").addEventListener("click", () => triggerAddNewTask("todo"));
-  $("btn-add-inprogress").addEventListener("click", () => triggerAddNewTask("inprogress"));
-  $("btn-add-done").addEventListener("click", () => triggerAddNewTask("done"));
+  $("btn-add-todo")?.addEventListener("click", () => triggerAddNewTask("todo"));
+  $("btn-add-inprogress")?.addEventListener("click", () => triggerAddNewTask("inprogress"));
+  $("btn-add-done")?.addEventListener("click", () => triggerAddNewTask("done"));
+  $("btn-archive-done")?.addEventListener("click", handleArchiveDoneTasks);
 
   // Éditeur
-  $("btn-close-editor").addEventListener("click", closeEditor);
-  $("btn-save-changes").addEventListener("click", saveChanges);
-  $("btn-delete-task").addEventListener("click", triggerDeleteTask);
+  $("btn-close-editor")?.addEventListener("click", closeEditor);
+  $("btn-save-changes")?.addEventListener("click", saveChanges);
+  $("btn-delete-task")?.addEventListener("click", triggerDeleteTask);
+  $("btn-add-subtask")?.addEventListener("click", handleAddSubtaskClick);
+  $("new-subtask-title")?.addEventListener("input", () => {
+    const btn = $("btn-add-subtask");
+    if (btn) btn.disabled = !$("new-subtask-title").value.trim();
+  });
+  $("new-subtask-title")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddSubtaskClick();
+    }
+  });
 
   // Auth
-  $("btn-login").addEventListener("click", () => authenticate(true));
-  $("btn-logout").addEventListener("click", logout);
+  $("btn-login")?.addEventListener("click", () => authenticate(true));
+  $("btn-logout")?.addEventListener("click", logout);
 
   // Plein écran (nouvel onglet)
-  $("btn-fullscreen").addEventListener("click", () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL("sidepanel.html") });
+  $("btn-fullscreen")?.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ type: "OPEN_FULLSCREEN" });
   });
 
   // Toast Gmail
-  $("btn-close-toast").addEventListener("click", hideGmailToast);
-  $("btn-add-gmail-task").addEventListener("click", openEditorWithCapturedEmail);
+  $("btn-close-toast")?.addEventListener("click", hideGmailToast);
+  $("btn-add-gmail-task")?.addEventListener("click", openEditorWithCapturedEmail);
 
   // Drag & Drop sur les conteneurs de colonnes
   ["todo", "inprogress", "done"].forEach(columnId => {
     const container = $(`col-${columnId}-container`);
-    container.addEventListener("dragover", (e) => {
+    container?.addEventListener("dragover", (e) => {
       e.preventDefault();
       container.classList.add("drag-over-active");
     });
-    container.addEventListener("dragleave", () => {
+    container?.addEventListener("dragleave", () => {
       container.classList.remove("drag-over-active");
     });
-    container.addEventListener("drop", (e) => {
+    container?.addEventListener("drop", (e) => {
       e.preventDefault();
       container.classList.remove("drag-over-active");
       const cardId = e.dataTransfer.getData("text/plain");
@@ -561,22 +640,67 @@ async function initAuth() {
 
 function authenticate(interactive = false) {
   setSyncStatus("connecting", "Authentification...");
+  const errorEl = $("auth-error-display");
+  if (errorEl) {
+    errorEl.classList.remove("visible");
+    errorEl.innerHTML = "";
+  }
+
   chrome.runtime.sendMessage({ type: "GET_TASKS_TOKEN", interactive }, (response) => {
+    const errorEl = $("auth-error-display");
     if (chrome.runtime.lastError) {
+      console.error("[Kanban] Erreur de communication avec l'extension :", chrome.runtime.lastError);
+      authToken = null;
+      const setupWizard = $("setup-wizard");
+      if (setupWizard) setupWizard.classList.remove("hidden");
+      const btnLogout = $("btn-logout");
+      if (btnLogout) btnLogout.classList.add("hidden");
       setSyncStatus("offline", "Erreur extension");
+      
+      const boardSelect = $("board-select");
+      if (boardSelect) {
+        boardSelect.innerHTML = `<option value="" disabled selected>${getMessage("setup_wizard_placeholder_login", "Veuillez vous connecter")}</option>`;
+      }
+      
+      if (errorEl) {
+        errorEl.innerHTML = `<strong>Erreur de communication :</strong><br>Impossible de se connecter au service worker de l'extension.<br><span style="font-size: 9px; margin-top: 4px; display: block;">Essayez de recharger la page Gmail. (${chrome.runtime.lastError.message})</span>`;
+        errorEl.classList.add("visible");
+      }
       return;
     }
     if (response && response.success && response.token) {
       authToken = response.token;
-      $("setup-wizard").classList.add("hidden");
-      $("btn-logout").classList.remove("hidden");
+      const setupWizard = $("setup-wizard");
+      if (setupWizard) setupWizard.classList.add("hidden");
+      const btnLogout = $("btn-logout");
+      if (btnLogout) btnLogout.classList.remove("hidden");
       setSyncStatus("connected", "Connecté");
       loadBoards();
     } else {
       authToken = null;
-      $("setup-wizard").classList.remove("hidden");
-      $("btn-logout").classList.add("hidden");
+      const setupWizard = $("setup-wizard");
+      if (setupWizard) setupWizard.classList.remove("hidden");
+      const btnLogout = $("btn-logout");
+      if (btnLogout) btnLogout.classList.add("hidden");
       setSyncStatus("offline", "Non authentifié");
+      
+      const boardSelect = $("board-select");
+      if (boardSelect) {
+        boardSelect.innerHTML = `<option value="" disabled selected>${getMessage("setup_wizard_placeholder_login", "Veuillez vous connecter")}</option>`;
+      }
+
+      const errMsg = response && response.error ? response.error : "Échec d'authentification";
+      if (interactive) {
+        console.error("[Kanban] Échec de l'authentification (Shadow DOM) :", errMsg);
+        if (errorEl) {
+          if (errMsg.includes("OAuth2 client not found") || errMsg.includes("OAuth2")) {
+            errorEl.innerHTML = `<strong>Erreur de configuration Google Cloud :</strong><br>Le client_id dans manifest.json n'est pas associé à l'ID d'extension <code>${chrome.runtime.id}</code>.<br><span style="font-size: 9px; margin-top: 4px; display: block;">Dépliez la section ci-dessous pour l'associer.</span>`;
+          } else {
+            errorEl.innerText = `Erreur : ${errMsg}`;
+          }
+          errorEl.classList.add("visible");
+        }
+      }
     }
   });
 }
@@ -588,7 +712,7 @@ function logout() {
     $("setup-wizard").classList.remove("hidden");
     $("btn-logout").classList.add("hidden");
     setSyncStatus("offline", "Déconnecté");
-    $("board-select").innerHTML = '<option value="" disabled selected>Veuillez vous connecter</option>';
+    $("board-select").innerHTML = `<option value="" disabled selected>${getMessage("setup_wizard_placeholder_login", "Veuillez vous connecter")}</option>`;
     clearColumns();
   });
 }
@@ -598,7 +722,43 @@ export function setSyncStatus(state, text) {
   const dot = $("sync-dot");
   const label = $("sync-text");
   if (!dot || !label) return;
-  label.innerText = text;
+
+  const translationMap = {
+    "Hors-ligne (Cache)": "status_offline_cache",
+    "À jour (Synchro)": "status_synced",
+    "Recherche de jeton...": "status_searching_token",
+    "Authentification...": "status_authenticating",
+    "Connecté": "status_connected",
+    "Non authentifié": "status_unauthenticated",
+    "Déconnecté": "status_logged_out",
+    "Erreur Sync": "status_sync_error",
+    "Synchro listes...": "status_sync_lists",
+    "Erreur réseau": "status_network_error",
+    "Vide": "status_empty",
+    "Chargement tâches...": "status_loading_tasks",
+    "À jour (Cache)": "status_cache_up_to_date",
+    "À jour": "status_up_to_date",
+    "Enregistrement...": "status_saving",
+    "Déplacé !": "status_moved",
+    "Sync échec": "status_sync_failed",
+    "Création tâche...": "status_creating_task",
+    "Créée !": "status_created",
+    "Échec création": "status_create_failed",
+    "Sauvegarde...": "status_saving_changes",
+    "Modifiée !": "status_modified",
+    "Suppression...": "status_deleting",
+    "Supprimée": "status_deleted",
+    "Échec suppression": "status_delete_failed",
+    "Liaison e-mail...": "status_linking_email",
+    "Lié !": "status_linked",
+    "Échec liaison": "status_link_failed",
+    "Archivage...": "status_archiving",
+    "Archivées !": "status_archived"
+  };
+
+  const key = translationMap[text];
+  const localizedText = key ? getMessage(key, text) : text;
+  label.innerText = localizedText;
   dot.className = "sync-dot " + state;
 }
 
@@ -717,6 +877,8 @@ export async function loadTasks(listId) {
     taskItems.forEach(rawTask => {
       if (isConfigTask(rawTask)) return;
       const { description, metadata } = parseTaskNotes(rawTask.notes);
+      if (metadata.archived === true) return;
+
       let columnId = metadata.columnId || "todo";
       if (rawTask.status === "completed") columnId = "done";
 
@@ -727,7 +889,8 @@ export async function loadTasks(listId) {
         tags: metadata.tags || [], subtasks: metadata.subtasks || [],
         gmailId: metadata.gmailId, gmailSubject: metadata.gmailSubject,
         gmailUrl: metadata.gmailUrl, columnId,
-        completed: rawTask.status === "completed"
+        completed: rawTask.status === "completed",
+        archived: false
       };
       formattedTasks.push(task);
     });
@@ -763,6 +926,7 @@ export function renderTasksFromData(tasks) {
   clearColumns();
   allTasks = {};
   tasks.forEach(task => {
+    if (task.archived === true) return;
     allTasks[task.id] = task;
     renderTaskCard(task);
   });
@@ -816,7 +980,27 @@ function renderTaskCard(task) {
     footerHtml += `</div>`;
   }
 
-  card.innerHTML = `${tagsHtml}<h4 class="${titleClass}">${escapeHtml(task.title)}</h4>${descHtml}${footerHtml}`;
+  let subtasksHtml = "";
+  if (task.subtasks && task.subtasks.length > 0) {
+    const completedCount = task.subtasks.filter(s => s.completed).length;
+    const totalCount = task.subtasks.length;
+    const percent = Math.round((completedCount / totalCount) * 100);
+    subtasksHtml = `
+      <div class="card-subtasks">
+        <div class="subtasks-text">
+          <svg class="subtask-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>${completedCount}/${totalCount} ${getMessage("subtasks_progression", "sous-tâches")}</span>
+        </div>
+        <div class="subtasks-progress-bar">
+          <div class="subtasks-progress-fill" style="width: ${percent}%;"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = `${tagsHtml}<h4 class="${titleClass}">${escapeHtml(task.title)}</h4>${descHtml}${subtasksHtml}${footerHtml}`;
 
   card.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData("text/plain", card.id);
@@ -834,47 +1018,88 @@ async function handleTaskColumnMove(taskId, columnId) {
   const task = allTasks[taskId];
   if (!task) return;
   const previousColumn = task.columnId;
-  
+  const previousCompleted = task.completed;
+
   if (!navigator.onLine) {
     alert("Impossible de modifier la tâche en mode hors-ligne. Veuillez rétablir votre connexion internet.");
-    renderTasksFromData(Object.values(allTasks));
+    const cardEl = kanbanShadowRoot.getElementById(taskId);
+    if (cardEl) {
+      const targetCol = $(`col-${previousColumn}`);
+      if (targetCol) {
+        targetCol.appendChild(cardEl);
+      }
+    }
+    updateBadges();
     setSyncStatus("offline", "Hors-ligne (Cache)");
     return;
   }
 
+  // 1. Mise à jour immédiate locale de la tâche
   task.columnId = columnId;
   const makeCompleted = (columnId === "done");
   task.completed = makeCompleted;
+
+  // Mise à jour de la classe CSS du titre de la carte immédiatement
+  const cardEl = kanbanShadowRoot.getElementById(taskId);
+  if (cardEl) {
+    const h4 = cardEl.querySelector("h4");
+    if (h4) {
+      h4.className = makeCompleted ? "card-title completed" : "card-title";
+    }
+  }
+
+  updateBadges();
+
+  // Mise à jour immédiate du cache local
+  const cacheKey = `kanban_tasks_cache_${activeListId}`;
+  const saveCache = async () => {
+    try {
+      await chrome.storage.local.set({
+        [cacheKey]: {
+          timestamp: Date.now(),
+          items: Object.values(allTasks)
+        }
+      });
+    } catch (e) {
+      console.warn("Échec écriture cache :", e);
+    }
+  };
+  await saveCache();
+
   setSyncStatus("connecting", "Enregistrement...");
 
+  // 2. Appel API asynchrone en arrière-plan
   try {
     const rawNotes = serializeTaskNotes(task.desc, {
       columnId, tags: task.tags, subtasks: task.subtasks,
-      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl
+      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl,
+      archived: task.archived || false
     });
     const body = { notes: rawNotes, status: makeCompleted ? "completed" : "needsAction" };
     if (!makeCompleted) body.completed = null;
     await apiCall(`/lists/${activeListId}/tasks/${taskId}`, "PATCH", body);
 
-    const cardEl = kanbanShadowRoot.getElementById(taskId);
-    if (cardEl) {
-      const h4 = cardEl.querySelector("h4");
-      h4.className = makeCompleted ? "card-title completed" : "card-title";
-    }
-
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
     setSyncStatus("connected", "Déplacé !");
   } catch (error) {
+    console.error("Échec de déplacement de colonne :", error);
+    // 3. Rollback
     task.columnId = previousColumn;
-    task.completed = (previousColumn === "done");
-    loadTasks(activeListId);
+    task.completed = previousCompleted;
+
+    if (cardEl) {
+      const targetCol = $(`col-${previousColumn}`);
+      if (targetCol) {
+        targetCol.appendChild(cardEl);
+        const h4 = cardEl.querySelector("h4");
+        if (h4) {
+          h4.className = previousCompleted ? "card-title completed" : "card-title";
+        }
+      }
+    }
+    updateBadges();
+    await saveCache();
+
+    alert("Échec de la synchronisation avec Google Tasks. La tâche a été replacée à sa position d'origine.");
     setSyncStatus("error", "Sync échec");
   }
 }
@@ -929,6 +1154,10 @@ function openEditor(taskId) {
   $("edit-date").value = task.date;
   $("edit-status").value = task.columnId;
   $("edit-tags").value = task.tags.join(", ");
+  $("new-subtask-title").value = "";
+  const addBtn = $("btn-add-subtask");
+  if (addBtn) addBtn.disabled = true;
+  renderSubtasksList(task);
 
   const gmailContext = $("gmail-context");
   if (task.gmailUrl) {
@@ -946,15 +1175,25 @@ function closeEditor() {
 }
 
 async function saveChanges() {
+  const taskId = $("edit-id").value;
+  const task = allTasks[taskId];
+  if (!task) return;
+
   if (!navigator.onLine) {
     alert("Impossible de modifier la tâche en mode hors-ligne.");
     setSyncStatus("offline", "Hors-ligne (Cache)");
     return;
   }
 
-  const taskId = $("edit-id").value;
-  const task = allTasks[taskId];
-  if (!task) return;
+  const previousState = {
+    title: task.title,
+    desc: task.desc,
+    date: task.date,
+    displayDate: task.displayDate,
+    columnId: task.columnId,
+    tags: [...task.tags],
+    completed: task.completed
+  };
 
   const newTitle = $("edit-title").value.trim() || "Sans titre";
   const newDesc = $("edit-desc").value;
@@ -963,12 +1202,48 @@ async function saveChanges() {
   const tagsInput = $("edit-tags").value;
   const newTags = tagsInput ? tagsInput.split(",").map(t => t.trim()).filter(t => t.length > 0) : [];
   const makeCompleted = (newColumnId === "done");
+
+  // 1. Fermer l'éditeur immédiatement
+  closeEditor();
+
+  // 2. Mettre à jour les données locales et l'UI immédiatement
+  task.title = newTitle;
+  task.desc = newDesc;
+  task.date = newDate;
+  task.displayDate = newDate ? formatDateFriendly(newDate) : "";
+  task.columnId = newColumnId;
+  task.tags = newTags;
+  task.completed = makeCompleted;
+
+  const cardEl = kanbanShadowRoot.getElementById(taskId);
+  if (cardEl) cardEl.remove();
+  renderTaskCard(task);
+  updateBadges();
+
+  // Enregistrer le cache local immédiatement
+  const cacheKey = `kanban_tasks_cache_${activeListId}`;
+  const saveCache = async () => {
+    try {
+      await chrome.storage.local.set({
+        [cacheKey]: {
+          timestamp: Date.now(),
+          items: Object.values(allTasks)
+        }
+      });
+    } catch (e) {
+      console.warn("Échec écriture cache :", e);
+    }
+  };
+  await saveCache();
+
   setSyncStatus("connecting", "Sauvegarde...");
 
+  // 3. Appel de mise à jour réseau asynchrone
   try {
     const rawNotes = serializeTaskNotes(newDesc, {
       columnId: newColumnId, tags: newTags, subtasks: task.subtasks,
-      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl
+      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl,
+      archived: task.archived || false
     });
     const body = {
       title: newTitle, notes: rawNotes,
@@ -978,26 +1253,19 @@ async function saveChanges() {
     if (!makeCompleted) body.completed = null;
     await apiCall(`/lists/${activeListId}/tasks/${taskId}`, "PATCH", body);
 
-    task.title = newTitle; task.desc = newDesc; task.date = newDate;
-    task.displayDate = newDate ? formatDateFriendly(newDate) : "";
-    task.columnId = newColumnId; task.tags = newTags; task.completed = makeCompleted;
-
-    const cardEl = kanbanShadowRoot.getElementById(taskId);
-    if (cardEl) cardEl.remove();
-    renderTaskCard(task);
-    updateBadges();
-
-    const cacheKey = `kanban_tasks_cache_${activeListId}`;
-    await chrome.storage.local.set({
-      [cacheKey]: {
-        timestamp: Date.now(),
-        items: Object.values(allTasks)
-      }
-    });
-
-    closeEditor();
     setSyncStatus("connected", "Modifiée !");
   } catch (error) {
+    console.error("Échec de sauvegarde des modifications :", error);
+    // 4. Rollback
+    Object.assign(task, previousState);
+
+    const currentCard = kanbanShadowRoot.getElementById(taskId);
+    if (currentCard) currentCard.remove();
+    renderTaskCard(task);
+    updateBadges();
+    await saveCache();
+
+    alert("Échec de la sauvegarde sur Google Tasks. Les modifications ont été annulées.");
     setSyncStatus("error", "Sync échec");
   }
 }
@@ -1203,7 +1471,16 @@ export function updateBadges() {
   ["todo", "inprogress", "done"].forEach(id => {
     const col = $(`col-${id}`);
     const badge = $(`badge-${id}`);
-    if (col && badge) badge.innerText = col.children.length;
+    if (col && badge) {
+      const count = col.children.length;
+      badge.innerText = count;
+      if (id === "done") {
+        const btnArchive = $("btn-archive-done");
+        if (btnArchive) {
+          btnArchive.style.display = count > 0 ? "block" : "none";
+        }
+      }
+    }
   });
 }
 
@@ -1286,14 +1563,15 @@ window.addEventListener("keydown", (e) => {
   if (isUserTyping()) return;
 
   // N ou n : Créer une nouvelle tâche dans la colonne "À faire"
-  if ((e.key === "n" || e.key === "N" || e.keyCode === 78) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+  // e.code "KeyN" fonctionne sur macOS (Option) et Windows/Linux (Alt)
+  if ((e.code === "KeyN" || e.key === "n" || e.key === "N" || e.keyCode === 78) && !e.altKey && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();
     triggerAddNewTask("todo");
     return;
   }
 
-  // Alt + T : Alterne entre l'onglet "Tableau Kanban" et "Objectif Travail"
-  if (e.altKey && (e.key === "t" || e.key === "T" || e.keyCode === 84)) {
+  // Alt/Option + T : Alterne entre l'onglet "Tableau Kanban" et "Objectifs du jour"
+  if (e.altKey && (e.code === "KeyT" || e.key === "t" || e.key === "T" || e.keyCode === 84)) {
     e.preventDefault();
     const tabKanban = $("tab-kanban");
     if (tabKanban) {
@@ -1305,4 +1583,274 @@ window.addEventListener("keydown", (e) => {
     }
   }
 }, true); // Phase de capture pour intercepter au plus tôt
+
+
+// ============================================================================
+// GESTION DYNAMIQUE ET INTERACTIVE DES SOUS-TÂCHES
+// ============================================================================
+function updateTaskCardContent(task) {
+  if (!kanbanShadowRoot) return;
+  const cardEl = kanbanShadowRoot.getElementById(task.id);
+  if (!cardEl) return;
+
+  let tagsHtml = "";
+  if (task.tags && task.tags.length > 0) {
+    tagsHtml = `<div class="card-tags">`;
+    task.tags.forEach(tag => {
+      const cls = tag.toLowerCase() === "urgent" ? "tag tag-urgent" : "tag tag-default";
+      tagsHtml += `<span class="${cls}">${escapeHtml(tag)}</span>`;
+    });
+    tagsHtml += `</div>`;
+  }
+
+  const titleClass = task.completed ? "card-title completed" : "card-title";
+  const descHtml = task.desc ? `<p class="card-desc">${escapeHtml(task.desc)}</p>` : "";
+
+  let subtasksHtml = "";
+  if (task.subtasks && task.subtasks.length > 0) {
+    const completedCount = task.subtasks.filter(s => s.completed).length;
+    const totalCount = task.subtasks.length;
+    const percent = Math.round((completedCount / totalCount) * 100);
+    subtasksHtml = `
+      <div class="card-subtasks">
+        <div class="subtasks-text">
+          <svg class="subtask-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>${completedCount}/${totalCount} ${getMessage("subtasks_progression", "sous-tâches")}</span>
+        </div>
+        <div class="subtasks-progress-bar">
+          <div class="subtasks-progress-fill" style="width: ${percent}%;"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  let footerHtml = "";
+  if (task.displayDate || task.gmailUrl) {
+    footerHtml = `<div class="card-footer">`;
+    if (task.displayDate) {
+      footerHtml += `<span class="card-date">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"></path>
+        </svg>
+        ${task.displayDate}
+      </span>`;
+    } else {
+      footerHtml += `<span></span>`;
+    }
+    if (task.gmailUrl) {
+      footerHtml += `<span class="card-gmail-badge">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        Gmail
+      </span>`;
+    }
+    footerHtml += `</div>`;
+  }
+
+  cardEl.innerHTML = `${tagsHtml}<h4 class="${titleClass}">${escapeHtml(task.title)}</h4>${descHtml}${subtasksHtml}${footerHtml}`;
+}
+
+async function saveSubtasksOptimistic(task) {
+  // 1. Mettre à jour l'UI visuelle immédiate de la carte
+  updateTaskCardContent(task);
+
+  // 2. Mettre à jour le cache local immédiatement
+  const cacheKey = `kanban_tasks_cache_${activeListId}`;
+  const saveCache = async () => {
+    try {
+      await chrome.storage.local.set({
+        [cacheKey]: {
+          timestamp: Date.now(),
+          items: Object.values(allTasks)
+        }
+      });
+    } catch (e) {
+      console.warn("Échec écriture cache :", e);
+    }
+  };
+  await saveCache();
+
+  // 3. Appel réseau en arrière-plan
+  if (!navigator.onLine) return;
+
+  try {
+    const rawNotes = serializeTaskNotes(task.desc, {
+      columnId: task.columnId, tags: task.tags, subtasks: task.subtasks,
+      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl,
+      archived: task.archived || false
+    });
+    const body = {
+      notes: rawNotes,
+      status: task.completed ? "completed" : "needsAction"
+    };
+    await apiCall(`/lists/${activeListId}/tasks/${task.id}`, "PATCH", body);
+  } catch (error) {
+    console.error("Échec de synchronisation silencieuse des sous-tâches :", error);
+  }
+}
+
+function handleAddSubtaskClick() {
+  const taskId = $("edit-id").value;
+  const task = allTasks[taskId];
+  if (!task) return;
+
+  const inputEl = $("new-subtask-title");
+  const addBtn = $("btn-add-subtask");
+  const title = inputEl.value.trim();
+  if (!title) return;
+
+  inputEl.value = "";
+  if (addBtn) addBtn.disabled = true;
+  if (!task.subtasks) task.subtasks = [];
+  const newSubtask = {
+    id: Math.random().toString(36).substring(2, 9),
+    title,
+    completed: false
+  };
+  task.subtasks.push(newSubtask);
+
+  renderSubtasksList(task);
+  saveSubtasksOptimistic(task);
+}
+
+function renderSubtasksList(task) {
+  const container = $("subtasks-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!task.subtasks || task.subtasks.length === 0) {
+    container.innerHTML = `<p class="smart-empty" style="text-align: center; font-size: 11px; padding: 8px 0;">Aucune sous-tâche.</p>`;
+    return;
+  }
+
+  task.subtasks.forEach(sub => {
+    const item = document.createElement("div");
+    item.className = "subtask-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "subtask-checkbox";
+    checkbox.checked = sub.completed;
+    checkbox.addEventListener("change", () => {
+      sub.completed = checkbox.checked;
+      if (sub.completed) {
+        input.classList.add("completed");
+      } else {
+        input.classList.remove("completed");
+      }
+      saveSubtasksOptimistic(task);
+    });
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = sub.completed ? "subtask-input completed" : "subtask-input";
+    input.value = sub.title;
+    input.addEventListener("change", () => {
+      sub.title = input.value.trim() || "Sous-tâche";
+      saveSubtasksOptimistic(task);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        input.blur();
+      }
+    });
+
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "btn-delete-subtask";
+    btnDelete.title = "Supprimer la sous-tâche";
+    btnDelete.innerHTML = `
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:12px;height:12px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+    `;
+    btnDelete.addEventListener("click", () => {
+      task.subtasks = task.subtasks.filter(s => s.id !== sub.id);
+      renderSubtasksList(task);
+      saveSubtasksOptimistic(task);
+    });
+
+    item.appendChild(checkbox);
+    item.appendChild(input);
+    item.appendChild(btnDelete);
+    container.appendChild(item);
+  });
+}
+
+async function handleArchiveDoneTasks() {
+  const doneTasks = Object.values(allTasks).filter(t => t.columnId === "done" && !t.archived);
+  if (doneTasks.length === 0) return;
+
+  if (!confirm(`Voulez-vous archiver ces ${doneTasks.length} tâches terminées ? (Elles resteront sauvegardées chez Google mais seront masquées ici)`)) {
+    return;
+  }
+
+  setSyncStatus("connecting", "Archivage...");
+
+  // Sauvegarder l'état précédent pour rollback
+  const rollbackStates = doneTasks.map(t => ({
+    id: t.id,
+    previousArchived: t.archived
+  }));
+
+  // 1. Mise à jour visuelle optimiste immédiate
+  doneTasks.forEach(task => {
+    task.archived = true;
+    const cardEl = kanbanShadowRoot ? kanbanShadowRoot.getElementById(task.id) : null;
+    if (cardEl) cardEl.remove();
+  });
+
+  updateBadges();
+
+  const cacheKey = `kanban_tasks_cache_${activeListId}`;
+  const saveCache = async () => {
+    try {
+      await chrome.storage.local.set({
+        [cacheKey]: {
+          timestamp: Date.now(),
+          items: Object.values(allTasks)
+        }
+      });
+    } catch (e) {
+      console.warn("Échec écriture cache :", e);
+    }
+  };
+  await saveCache();
+
+  // 2. Requêtes réseau en arrière-plan parallèles
+  if (!navigator.onLine) {
+    setSyncStatus("offline", "Hors-ligne (Cache)");
+    return;
+  }
+
+  const promises = doneTasks.map(async (task) => {
+    const rawNotes = serializeTaskNotes(task.desc, {
+      columnId: task.columnId, tags: task.tags, subtasks: task.subtasks,
+      gmailId: task.gmailId, gmailSubject: task.gmailSubject, gmailUrl: task.gmailUrl,
+      archived: true
+    });
+    await apiCall(`/lists/${activeListId}/tasks/${task.id}`, "PATCH", { notes: rawNotes });
+  });
+
+  try {
+    await Promise.all(promises);
+    setSyncStatus("connected", "Archivées !");
+  } catch (error) {
+    console.error("Erreur lors de l'archivage en arrière-plan :", error);
+    rollbackStates.forEach(state => {
+      const task = allTasks[state.id];
+      if (task) {
+        task.archived = state.previousArchived;
+      }
+    });
+
+    renderTasksFromData(Object.values(allTasks));
+    await saveCache();
+
+    alert("Une erreur est survenue lors de l'archivage avec Google Tasks. Certaines tâches ont été restaurées.");
+    setSyncStatus("error", "Sync échec");
+  }
+}
 

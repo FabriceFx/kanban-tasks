@@ -733,10 +733,36 @@
   text-align: center;
 }
 
-.wizard-steps {
-  background: white;
+.wizard-details {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  background: white;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.wizard-details summary {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  outline: none;
+}
+
+.wizard-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.wizard-details[open] summary {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wizard-steps {
   padding: 16px;
 }
 
@@ -821,6 +847,34 @@
   color: var(--color-text-muted);
   text-align: center;
   line-height: 1.4;
+}
+
+.auth-error-display {
+  display: none;
+  font-size: 11px;
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.auth-error-display.visible {
+  display: block;
+}
+
+.auth-error-display code {
+  background: #f1f3f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 10px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
 }
 
 /* --- Gmail Toast --- */
@@ -1009,3 +1063,217 @@
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+
+/* --- Dialog Overlay & Notification Modale Material 3 --- */
+.dialog-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog-box {
+  background-color: #ffffff;
+  border-radius: 28px; /* Rayon Material 3 standard pour Dialog */
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dialog-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.dialog-icon-wrapper.danger {
+  background-color: #f9dcdb;
+  color: var(--color-danger);
+}
+
+.dialog-icon-wrapper.warning {
+  background-color: #ffe0b2;
+  color: #ff9800;
+}
+
+.dialog-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.dialog-message {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.dialog-actions {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.dialog-actions button {
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color var(--transition-fast);
+}
+
+.dialog-actions .btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+
+.dialog-actions .btn-secondary:hover {
+  background-color: rgba(11, 87, 208, 0.08);
+}
+
+.dialog-actions .btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.dialog-actions .btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* --- Sous-tâches --- */
+.card-subtasks {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subtasks-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.subtask-icon {
+  width: 12px;
+  height: 12px;
+  color: #1a7f37;
+  flex-shrink: 0;
+}
+
+.subtasks-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.subtasks-progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+/* Section de sous-tâches dans l'éditeur */
+.subtasks-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.subtask-checkbox {
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}
+
+.subtask-input {
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.subtask-input:focus {
+  border-color: #d1d5db;
+  background: white;
+}
+
+.subtask-input.completed {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.btn-delete-subtask {
+  padding: 4px 6px;
+  color: var(--color-danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete-subtask:hover {
+  background-color: #fce8e6;
+}
+
+.btn-delete-subtask svg {
+  width: 12px;
+  height: 12px;
+}
+
+

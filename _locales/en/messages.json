@@ -1,0 +1,431 @@
+{
+  "extName": {
+    "message": "Kanban Tasks",
+    "description": "The extension name"
+  },
+  "extDescription": {
+    "message": "Transform your Google Tasks lists into visual Kanban boards inside Gmail.",
+    "description": "The extension short description"
+  },
+  "actionTitle": {
+    "message": "Open Kanban Tasks (new tab)",
+    "description": "The default action icon hover tooltip"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading text"
+  },
+  "syncing": {
+    "message": "Syncing...",
+    "description": "Sync badge status when working"
+  },
+  "connected": {
+    "message": "Connected",
+    "description": "Sync badge status when successful"
+  },
+  "sync_error": {
+    "message": "Sync error",
+    "description": "Sync badge status when failed"
+  },
+  "logout": {
+    "message": "Sign out",
+    "description": "Log out button tooltip"
+  },
+  "fullscreen": {
+    "message": "Expand to full screen",
+    "description": "Fullscreen sidepanel button tooltip"
+  },
+  "open_new_tab": {
+    "message": "Open in a new tab",
+    "description": "Open full-page tab button tooltip"
+  },
+  "tab_kanban": {
+    "message": "Kanban Board",
+    "description": "Kanban Board tab title"
+  },
+  "tab_smart": {
+    "message": "Work Focus",
+    "description": "Work Focus intelligent target focus tab title"
+  },
+  "setup_title": {
+    "message": "Access your Google Tasks",
+    "description": "OAuth2 setup wizard screen title"
+  },
+  "setup_desc": {
+    "message": "Visualize and manage your Google Tasks in an intuitive and fluid Kanban board directly integrated.",
+    "description": "Login screen description"
+  },
+  "setup_dev_title": {
+    "message": "⚙️ Manual Configuration (Developers)",
+    "description": "Developer accordion title"
+  },
+  "setup_step_title": {
+    "message": "🛠️ Quick Setup Steps",
+    "description": "Setup steps section title"
+  },
+  "setup_step_1": {
+    "message": "Copy the generated extension ID:",
+    "description": "Setup step 1 description"
+  },
+  "setup_step_2": {
+    "message": "In your <a href=\"https://console.cloud.google.com\" target=\"_blank\" class=\"text-blue-600 hover:underline font-semibold\">Google Console</a>, create OAuth client ID credentials of type <strong>Chrome Application</strong> using this ID.",
+    "description": "Setup step 2 description"
+  },
+  "setup_step_3": {
+    "message": "Enable Google Tasks API and insert your client_id key into the manifest.json file.",
+    "description": "Setup step 3 description"
+  },
+  "login_google": {
+    "message": "Sign in with Google",
+    "description": "Google OAuth sign in button"
+  },
+  "setup_footer": {
+    "message": "Your task data only transits securely directly between Chrome and official Google servers.",
+    "description": "Security warning disclaimer"
+  },
+  "col_todo": {
+    "message": "To Do",
+    "description": "First column name in Kanban Board"
+  },
+  "col_in_progress": {
+    "message": "In Progress",
+    "description": "Second column name in Kanban Board"
+  },
+  "col_done": {
+    "message": "Done",
+    "description": "Third column name in Kanban Board"
+  },
+  "btn_archive": {
+    "message": "Archive",
+    "description": "Completed tasks archive button"
+  },
+  "btn_add_task": {
+    "message": "+ Add a task",
+    "description": "Quick add task card trigger"
+  },
+  "toast_email_captured": {
+    "message": "Email captured from Gmail!",
+    "description": "Email captured popup notification"
+  },
+  "toast_sync_success": {
+    "message": "Synchronized with Google Tasks!",
+    "description": "Sync success notification"
+  },
+  "toast_sync_failed": {
+    "message": "Synchronization failed.",
+    "description": "Sync failure warning notification"
+  },
+  "toast_task_restored": {
+    "message": "Sync failed. Task restored to original column.",
+    "description": "Rollback visual warning notification"
+  },
+  "toast_archived_success": {
+    "message": "Completed tasks archived!",
+    "description": "Completed task bulk archiving success toast"
+  },
+  "editor_title_placeholder": {
+    "message": "Task title...",
+    "description": "Placeholder for task title in editor panel"
+  },
+  "editor_desc_placeholder": {
+    "message": "Task description...",
+    "description": "Placeholder for task notes in editor panel"
+  },
+  "editor_date_label": {
+    "message": "Due Date",
+    "description": "Date label in editor panel"
+  },
+  "editor_tags_label": {
+    "message": "Tags (comma-separated)",
+    "description": "Tags label in editor panel"
+  },
+  "editor_subtasks_label": {
+    "message": "Subtasks",
+    "description": "Subtasks label in editor panel"
+  },
+  "editor_new_subtask_placeholder": {
+    "message": "Add a subtask...",
+    "description": "Placeholder for adding a new subtask in editor"
+  },
+  "btn_add": {
+    "message": "Add",
+    "description": "Add button in editor"
+  },
+  "btn_save": {
+    "message": "Save",
+    "description": "Save changes button in editor"
+  },
+  "btn_cancel": {
+    "message": "Close",
+    "description": "Cancel edits button in editor"
+  },
+  "archive_confirm": {
+    "message": "Do you want to archive all completed tasks? (They will remain saved in Google but hidden from the Kanban board)",
+    "description": "Confirmation prompt before bulk archiving tasks"
+  },
+  "sidebar_kanban_text": {
+    "message": "Kanban Board",
+    "description": "Gmail sidebar navigation button text"
+  },
+  "sidebar_kanban_title": {
+    "message": "Open Kanban Tasks Board",
+    "description": "Gmail sidebar navigation button tooltip"
+  },
+  "add_to_kanban": {
+    "message": "Add to Kanban",
+    "description": "Add email to Kanban button inside Gmail"
+  },
+  "added_to_kanban": {
+    "message": "Added to Kanban!",
+    "description": "Added confirmation label inside Gmail"
+  },
+  "email_no_subject": {
+    "message": "No Subject Email",
+    "description": "Default value for a Gmail email with no subject"
+  },
+  "gmail_toast_title": {
+    "message": "New email captured!",
+    "description": "Gmail side panel notification toast title"
+  },
+  "gmail_toast_action": {
+    "message": "Create task",
+    "description": "Gmail side panel notification toast create task action"
+  },
+  "toast_email_opened": {
+    "message": "Email opened",
+    "description": "Email opened header notification toast"
+  },
+  "gmail_toast_btn_create": {
+    "message": "Create Kanban task",
+    "description": "Button to create task from email capture"
+  },
+  "editor_details_title": {
+    "message": "Task details",
+    "description": "Sliding task editor title header"
+  },
+  "editor_title_label": {
+    "message": "Title",
+    "description": "Title label in editor"
+  },
+  "editor_desc_label": {
+    "message": "Description",
+    "description": "Description label in editor"
+  },
+  "editor_status_label": {
+    "message": "Status",
+    "description": "Status label in editor"
+  },
+  "editor_gmail_context_label": {
+    "message": "Original Gmail email",
+    "description": "Linked email label"
+  },
+  "editor_view_gmail_link": {
+    "message": "View email in Gmail",
+    "description": "Redirection link back to Gmail"
+  },
+  "editor_btn_save": {
+    "message": "Save changes",
+    "description": "Save changes button in editor"
+  },
+  "editor_tags_placeholder": {
+    "message": "e.g., Urgent, Client project",
+    "description": "Placeholder for tags input"
+  },
+  "smart_today": {
+    "message": "Today",
+    "description": "Today section of smart tab"
+  },
+  "smart_week": {
+    "message": "This week",
+    "description": "This week section of smart tab"
+  },
+  "smart_no_tasks": {
+    "message": "No scheduled tasks.",
+    "description": "Message displayed when no tasks are scheduled"
+  },
+  "toast_delete_success": {
+    "message": "Task deleted successfully!",
+    "description": "Task delete success toast notification"
+  },
+  "toast_delete_failed": {
+    "message": "Failed to delete task.",
+    "description": "Task delete failure toast notification"
+  },
+  "subtasks_progression": {
+    "message": "subtasks",
+    "description": "Text showing progression of subtasks (e.g. 1/3 subtasks)"
+  },
+  "btn_delete_task": {
+    "message": "Delete task",
+    "description": "Delete button tooltip"
+  },
+  "status_offline_cache": {
+    "message": "Offline (Cached)",
+    "description": "Offline badge status"
+  },
+  "status_synced": {
+    "message": "Up to date (Synced)",
+    "description": "Synced badge status"
+  },
+  "status_searching_token": {
+    "message": "Searching for token...",
+    "description": "Searching token badge status"
+  },
+  "status_authenticating": {
+    "message": "Authenticating...",
+    "description": "Authenticating badge status"
+  },
+  "status_connected": {
+    "message": "Connected",
+    "description": "Connected badge status"
+  },
+  "status_unauthenticated": {
+    "message": "Unauthenticated",
+    "description": "Unauthenticated badge status"
+  },
+  "status_logged_out": {
+    "message": "Signed out",
+    "description": "Logged out badge status"
+  },
+  "status_sync_error": {
+    "message": "Sync error",
+    "description": "Sync error badge status"
+  },
+  "status_sync_lists": {
+    "message": "Syncing lists...",
+    "description": "Syncing lists badge status"
+  },
+  "status_network_error": {
+    "message": "Network error",
+    "description": "Network error badge status"
+  },
+  "status_empty": {
+    "message": "Empty",
+    "description": "Empty badge status"
+  },
+  "status_loading_tasks": {
+    "message": "Loading tasks...",
+    "description": "Loading tasks badge status"
+  },
+  "status_cache_up_to_date": {
+    "message": "Up to date (Cached)",
+    "description": "Cached up to date badge status"
+  },
+  "status_up_to_date": {
+    "message": "Up to date",
+    "description": "Up to date badge status"
+  },
+  "status_saving": {
+    "message": "Saving...",
+    "description": "Saving badge status"
+  },
+  "status_moved": {
+    "message": "Moved!",
+    "description": "Moved card badge status"
+  },
+  "status_sync_failed": {
+    "message": "Sync failed",
+    "description": "Sync failure badge status"
+  },
+  "status_creating_task": {
+    "message": "Creating task...",
+    "description": "Creating task badge status"
+  },
+  "status_created": {
+    "message": "Created!",
+    "description": "Created task badge status"
+  },
+  "status_create_failed": {
+    "message": "Create failed",
+    "description": "Create failed badge status"
+  },
+  "status_saving_changes": {
+    "message": "Saving...",
+    "description": "Saving task details badge status"
+  },
+  "status_modified": {
+    "message": "Modified!",
+    "description": "Task modified badge status"
+  },
+  "status_deleting": {
+    "message": "Deleting...",
+    "description": "Deleting task badge status"
+  },
+  "status_deleted": {
+    "message": "Deleted",
+    "description": "Task deleted badge status"
+  },
+  "status_delete_failed": {
+    "message": "Delete failed",
+    "description": "Task delete failed badge status"
+  },
+  "status_linking_email": {
+    "message": "Linking email...",
+    "description": "Linking email badge status"
+  },
+  "status_linked": {
+    "message": "Linked!",
+    "description": "Linked email badge status"
+  },
+  "status_link_failed": {
+    "message": "Link failed",
+    "description": "Email linking failure badge status"
+  },
+  "status_archiving": {
+    "message": "Archiving...",
+    "description": "Archiving completed tasks badge status"
+  },
+  "status_archived": {
+    "message": "Archived!",
+    "description": "Archived completed tasks badge status"
+  },
+  "delete_confirm": {
+    "message": "Are you sure you want to permanently delete this task?",
+    "description": "Task delete confirmation prompt"
+  },
+  "archive_confirm_plural": {
+    "message": "Do you want to archive these $COUNT$ completed tasks? (They will remain saved in Google but hidden here)",
+    "description": "Task bulk archiving confirmation prompt",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "alert_offline_modify_task": {
+    "message": "Cannot modify task in offline mode. Please restore your internet connection.",
+    "description": "Warning when editing offline"
+  },
+  "alert_sync_failed_rollback": {
+    "message": "Google Tasks synchronization failed. The task has been restored to its original position.",
+    "description": "Warning and automatic rollback"
+  },
+  "alert_offline_add_task": {
+    "message": "Cannot add task in offline mode.",
+    "description": "Warning when adding offline"
+  },
+  "alert_offline_edit_task": {
+    "message": "Cannot modify task in offline mode.",
+    "description": "Warning when saving offline"
+  },
+  "alert_save_failed_rollback": {
+    "message": "Google Tasks save failed. Changes have been reverted.",
+    "description": "Warning when save failed"
+  },
+  "alert_offline_delete_task": {
+    "message": "Cannot delete task in offline mode.",
+    "description": "Warning when deleting offline"
+  },
+  "alert_offline_link_email": {
+    "message": "Cannot link email in offline mode.",
+    "description": "Warning when linking email offline"
+  },
+  "alert_archive_failed_rollback": {
+    "message": "An error occurred while archiving with Google Tasks. Some tasks have been restored.",
+    "description": "Warning when archiving failed"
+  },
+  "setup_wizard_placeholder_login": {
+    "message": "Please sign in",
+    "description": "Placeholder when not signed in"
+  }
+}

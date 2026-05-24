@@ -1,0 +1,431 @@
+{
+  "extName": {
+    "message": "Kanban Tasks",
+    "description": "Le nom de l'extension"
+  },
+  "extDescription": {
+    "message": "Transformez vos listes Google Tasks en tableaux Kanban visuels dans Gmail.",
+    "description": "La description courte de l'extension"
+  },
+  "actionTitle": {
+    "message": "Ouvrir Kanban Tasks (nouvel onglet)",
+    "description": "Le titre de l'action par défaut au survol de l'icône"
+  },
+  "loading": {
+    "message": "Chargement...",
+    "description": "Texte de chargement"
+  },
+  "syncing": {
+    "message": "Synchro...",
+    "description": "Badge de synchronisation en cours"
+  },
+  "connected": {
+    "message": "Connecté",
+    "description": "Badge de synchronisation réussie"
+  },
+  "sync_error": {
+    "message": "Erreur synchro",
+    "description": "Badge d'erreur de synchronisation"
+  },
+  "logout": {
+    "message": "Se déconnecter",
+    "description": "Bouton de déconnexion"
+  },
+  "fullscreen": {
+    "message": "Agrandir en plein écran",
+    "description": "Bouton de plein écran autonome"
+  },
+  "open_new_tab": {
+    "message": "Ouvrir dans un nouvel onglet",
+    "description": "Bouton d'ouverture de l'onglet complet"
+  },
+  "tab_kanban": {
+    "message": "Tableau Kanban",
+    "description": "Onglet du tableau Kanban"
+  },
+  "tab_smart": {
+    "message": "Objectifs du jour",
+    "description": "Tab name for the smart schedule view."
+  },
+  "setup_title": {
+    "message": "Accès à vos tâches Google",
+    "description": "Titre de l'écran d'accueil OAuth2"
+  },
+  "setup_desc": {
+    "message": "Visualisez et gérez vos tâches Google Tasks dans un tableau Kanban intuitif et fluide directement intégré.",
+    "description": "Description de l'écran de connexion"
+  },
+  "setup_dev_title": {
+    "message": "⚙️ Configuration manuelle (Développeurs)",
+    "description": "Titre de l'accordéon développeur"
+  },
+  "setup_step_title": {
+    "message": "🛠️ Étape de configuration rapide",
+    "description": "Titre des étapes de configuration"
+  },
+  "setup_step_1": {
+    "message": "Copiez l'ID d'extension généré :",
+    "description": "Première étape de configuration"
+  },
+  "setup_step_2": {
+    "message": "Dans votre <a href=\"https://console.cloud.google.com\" target=\"_blank\" class=\"text-blue-600 hover:underline font-semibold\">Google Console</a>, créez des identifiants <strong>ID de client OAuth</strong> de type <strong>Application Chrome</strong> avec cet ID.",
+    "description": "Deuxième étape de configuration"
+  },
+  "setup_step_3": {
+    "message": "Activer la Google Tasks API et insérez votre clé client_id dans le fichier manifest.json.",
+    "description": "Troisième étape de configuration"
+  },
+  "login_google": {
+    "message": "Se connecter avec Google",
+    "description": "Bouton de connexion OAuth"
+  },
+  "setup_footer": {
+    "message": "Vos données de tâches transitent uniquement entre Chrome et les serveurs sécurisés de Google.",
+    "description": "Note de sécurité sur les données"
+  },
+  "col_todo": {
+    "message": "À faire",
+    "description": "Nom de la première colonne Kanban"
+  },
+  "col_in_progress": {
+    "message": "En cours",
+    "description": "Nom de la deuxième colonne Kanban"
+  },
+  "col_done": {
+    "message": "Terminé",
+    "description": "Nom de la troisième colonne Kanban"
+  },
+  "btn_archive": {
+    "message": "Archiver",
+    "description": "Bouton d'archivage des tâches terminées"
+  },
+  "btn_add_task": {
+    "message": "+ Ajouter une tâche",
+    "description": "Bouton d'ajout rapide de tâche"
+  },
+  "toast_email_captured": {
+    "message": "E-mail capturé depuis Gmail !",
+    "description": "Notification d'e-mail capturé"
+  },
+  "toast_sync_success": {
+    "message": "Synchronisé avec Google Tasks !",
+    "description": "Notification de succès de synchronisation"
+  },
+  "toast_sync_failed": {
+    "message": "Échec de synchronisation.",
+    "description": "Notification d'échec générique"
+  },
+  "toast_task_restored": {
+    "message": "Échec de synchronisation. Tâche restaurée à sa place.",
+    "description": "Notification d'échec et rollback visuel"
+  },
+  "toast_archived_success": {
+    "message": "Tâches terminées archivées !",
+    "description": "Notification de succès d'archivage"
+  },
+  "editor_title_placeholder": {
+    "message": "Nommez votre tâche...",
+    "description": "Placeholder pour le titre de la tâche dans l'éditeur"
+  },
+  "editor_desc_placeholder": {
+    "message": "Rédigez des détails ou consignes...",
+    "description": "Placeholder pour la description dans l'éditeur"
+  },
+  "editor_date_label": {
+    "message": "Échéance",
+    "description": "Libellé de la date dans l'éditeur"
+  },
+  "editor_tags_label": {
+    "message": "Étiquettes (séparées par virgules)",
+    "description": "Libellé des étiquettes dans l'éditeur"
+  },
+  "editor_subtasks_label": {
+    "message": "Sous-tâches",
+    "description": "Libellé des sous-tâches dans l'éditeur"
+  },
+  "editor_new_subtask_placeholder": {
+    "message": "Ajouter une sous-tâche...",
+    "description": "Placeholder d'ajout de sous-tâche"
+  },
+  "btn_add": {
+    "message": "Ajouter",
+    "description": "Bouton Ajouter général"
+  },
+  "btn_save": {
+    "message": "Enregistrer",
+    "description": "Bouton de sauvegarde générale"
+  },
+  "btn_cancel": {
+    "message": "Fermer",
+    "description": "Bouton Annuler général"
+  },
+  "archive_confirm": {
+    "message": "Voulez-vous archiver toutes les tâches terminées ? (Elles resteront sauvegardées chez Google mais masquées du Kanban)",
+    "description": "Message de confirmation de l'archivage"
+  },
+  "sidebar_kanban_text": {
+    "message": "Tableau Kanban",
+    "description": "Bouton du menu latéral de Gmail"
+  },
+  "sidebar_kanban_title": {
+    "message": "Ouvrir le Tableau Kanban Tasks",
+    "description": "Infobulle du bouton du menu latéral de Gmail"
+  },
+  "add_to_kanban": {
+    "message": "Ajouter au Kanban",
+    "description": "Bouton d'ajout rapide dans Gmail"
+  },
+  "added_to_kanban": {
+    "message": "Ajouté au Kanban !",
+    "description": "Bouton de confirmation dans Gmail"
+  },
+  "email_no_subject": {
+    "message": "E-mail sans objet",
+    "description": "Valeur par défaut pour un e-mail Gmail sans objet"
+  },
+  "gmail_toast_title": {
+    "message": "Nouveau mail capturé !",
+    "description": "Titre du toast d'e-mail capturé"
+  },
+  "gmail_toast_action": {
+    "message": "Créer la tâche",
+    "description": "Bouton d'action du toast d'e-mail capturé"
+  },
+  "toast_email_opened": {
+    "message": "E-mail ouvert",
+    "description": "En-tête de la notification d'e-mail ouvert"
+  },
+  "gmail_toast_btn_create": {
+    "message": "Créer une tâche Kanban",
+    "description": "Bouton de création de tâche depuis l'e-mail"
+  },
+  "editor_details_title": {
+    "message": "Détails de la tâche",
+    "description": "Titre de l'éditeur glissant"
+  },
+  "editor_title_label": {
+    "message": "Titre",
+    "description": "Étiquette Titre"
+  },
+  "editor_desc_label": {
+    "message": "Description",
+    "description": "Étiquette Description"
+  },
+  "editor_status_label": {
+    "message": "Statut",
+    "description": "Étiquette Statut"
+  },
+  "editor_gmail_context_label": {
+    "message": "E-mail Gmail d'origine",
+    "description": "Étiquette mail lié"
+  },
+  "editor_view_gmail_link": {
+    "message": "Consulter l'e-mail dans Gmail",
+    "description": "Lien de redirection e-mail"
+  },
+  "editor_btn_save": {
+    "message": "Enregistrer les modifications",
+    "description": "Bouton Enregistrer l'édition"
+  },
+  "editor_tags_placeholder": {
+    "message": "ex: Urgent, Projet client",
+    "description": "Placeholder pour les étiquettes"
+  },
+  "smart_today": {
+    "message": "Aujourd'hui",
+    "description": "Section Aujourd'hui de l'onglet smart"
+  },
+  "smart_week": {
+    "message": "Cette semaine",
+    "description": "Section Semaine de l'onglet smart"
+  },
+  "smart_no_tasks": {
+    "message": "Aucune tâche planifiée.",
+    "description": "Message quand aucune tâche n'est planifiée"
+  },
+  "toast_delete_success": {
+    "message": "Tâche supprimée avec succès !",
+    "description": "Notification de tâche supprimée"
+  },
+  "toast_delete_failed": {
+    "message": "Échec de la suppression de la tâche.",
+    "description": "Notification d'erreur de suppression"
+  },
+  "subtasks_progression": {
+    "message": "sous-tâches",
+    "description": "Texte de progression des sous-tâches (ex: 1/3 sous-tâches)"
+  },
+  "btn_delete_task": {
+    "message": "Supprimer la tâche",
+    "description": "Infobulle du bouton supprimer"
+  },
+  "status_offline_cache": {
+    "message": "Hors-ligne (Cache)",
+    "description": "Badge hors-ligne"
+  },
+  "status_synced": {
+    "message": "À jour (Synchro)",
+    "description": "Badge à jour"
+  },
+  "status_searching_token": {
+    "message": "Recherche de jeton...",
+    "description": "Badge recherche jeton"
+  },
+  "status_authenticating": {
+    "message": "Authentification...",
+    "description": "Badge authentification"
+  },
+  "status_connected": {
+    "message": "Connecté",
+    "description": "Badge connecté"
+  },
+  "status_unauthenticated": {
+    "message": "Non authentifié",
+    "description": "Badge non authentifié"
+  },
+  "status_logged_out": {
+    "message": "Déconnecté",
+    "description": "Badge déconnecté"
+  },
+  "status_sync_error": {
+    "message": "Erreur Sync",
+    "description": "Badge erreur synchro"
+  },
+  "status_sync_lists": {
+    "message": "Synchro listes...",
+    "description": "Badge synchro listes"
+  },
+  "status_network_error": {
+    "message": "Erreur réseau",
+    "description": "Badge erreur réseau"
+  },
+  "status_empty": {
+    "message": "Vide",
+    "description": "Badge vide"
+  },
+  "status_loading_tasks": {
+    "message": "Chargement tâches...",
+    "description": "Badge chargement tâches"
+  },
+  "status_cache_up_to_date": {
+    "message": "À jour (Cache)",
+    "description": "Badge à jour cache"
+  },
+  "status_up_to_date": {
+    "message": "À jour",
+    "description": "Badge à jour"
+  },
+  "status_saving": {
+    "message": "Enregistrement...",
+    "description": "Badge enregistrement"
+  },
+  "status_moved": {
+    "message": "Déplacé !",
+    "description": "Badge déplacé"
+  },
+  "status_sync_failed": {
+    "message": "Sync échec",
+    "description": "Badge échec"
+  },
+  "status_creating_task": {
+    "message": "Création tâche...",
+    "description": "Badge création tâche"
+  },
+  "status_created": {
+    "message": "Créée !",
+    "description": "Badge créée"
+  },
+  "status_create_failed": {
+    "message": "Échec création",
+    "description": "Badge échec création"
+  },
+  "status_saving_changes": {
+    "message": "Sauvegarde...",
+    "description": "Badge sauvegarde"
+  },
+  "status_modified": {
+    "message": "Modifiée !",
+    "description": "Badge modifiée"
+  },
+  "status_deleting": {
+    "message": "Suppression...",
+    "description": "Badge suppression"
+  },
+  "status_deleted": {
+    "message": "Supprimée",
+    "description": "Badge supprimée"
+  },
+  "status_delete_failed": {
+    "message": "Échec suppression",
+    "description": "Badge échec suppression"
+  },
+  "status_linking_email": {
+    "message": "Liaison e-mail...",
+    "description": "Badge liaison"
+  },
+  "status_linked": {
+    "message": "Lié !",
+    "description": "Badge lié"
+  },
+  "status_link_failed": {
+    "message": "Échec liaison",
+    "description": "Badge échec liaison"
+  },
+  "status_archiving": {
+    "message": "Archivage...",
+    "description": "Badge archivage"
+  },
+  "status_archived": {
+    "message": "Archivées !",
+    "description": "Badge archivées"
+  },
+  "delete_confirm": {
+    "message": "Voulez-vous vraiment supprimer définitivement cette tâche ?",
+    "description": "Confirmation de suppression"
+  },
+  "archive_confirm_plural": {
+    "message": "Voulez-vous archiver ces $COUNT$ tâches terminées ? (Elles resteront sauvegardées chez Google mais seront masquées ici)",
+    "description": "Confirmation d'archivage",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "alert_offline_modify_task": {
+    "message": "Impossible de modifier la tâche en mode hors-ligne. Veuillez rétablir votre connexion internet.",
+    "description": "Alerte modif hors-ligne"
+  },
+  "alert_sync_failed_rollback": {
+    "message": "Échec de la synchronisation avec Google Tasks. La tâche a été replacée à sa position d'origine.",
+    "description": "Alerte échec et rollback"
+  },
+  "alert_offline_add_task": {
+    "message": "Impossible d'ajouter une tâche en mode hors-ligne.",
+    "description": "Alerte ajout hors-ligne"
+  },
+  "alert_offline_edit_task": {
+    "message": "Impossible de modifier la tâche en mode hors-ligne.",
+    "description": "Alerte edit hors-ligne"
+  },
+  "alert_save_failed_rollback": {
+    "message": "Échec de la sauvegarde sur Google Tasks. Les modifications ont été annulées.",
+    "description": "Alerte échec sauvegarde"
+  },
+  "alert_offline_delete_task": {
+    "message": "Impossible de supprimer la tâche en mode hors-ligne.",
+    "description": "Alerte suppression hors-ligne"
+  },
+  "alert_offline_link_email": {
+    "message": "Impossible de lier un e-mail en mode hors-ligne.",
+    "description": "Alerte liaison e-mail hors-ligne"
+  },
+  "alert_archive_failed_rollback": {
+    "message": "Une erreur est survenue lors de l'archivage avec Google Tasks. Certaines tâches ont été restaurées.",
+    "description": "Alerte erreur archivage"
+  },
+  "setup_wizard_placeholder_login": {
+    "message": "Veuillez vous connecter",
+    "description": "Placeholder quand non connecté"
+  }
+}

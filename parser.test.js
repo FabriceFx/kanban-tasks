@@ -85,6 +85,21 @@ describe("parser.js - Validation de Schéma & Robustesse", () => {
     expect(invalidOutput.gmailUrl).toBeNull();
   });
 
+  test("validateMetadata - Devrait valider et conserver le champ archived", () => {
+    // Par défaut
+    expect(validateMetadata({}).archived).toBe(false);
+
+    // Vrai
+    expect(validateMetadata({ archived: true }).archived).toBe(true);
+
+    // Faux
+    expect(validateMetadata({ archived: false }).archived).toBe(false);
+
+    // Falsy/Truthy conversions
+    expect(validateMetadata({ archived: "truthy" }).archived).toBe(true);
+    expect(validateMetadata({ archived: 0 }).archived).toBe(false);
+  });
+
 });
 
 describe("parser.js - Désérialisation (parseTaskNotes)", () => {
