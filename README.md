@@ -1,6 +1,12 @@
-# Kanban Tasks - Gmail edition
+# 📦 Kanban Tasks - Gmail edition
 
-Une extension Google Chrome (Manifest V3) ultra-moderne qui transforme l'interface de Gmail en un puissant outil de productivité visuel et décentralisé.
+[🇫🇷 Version Française](#-version-française) | [🇬🇧 English Version](#-english-version)
+
+---
+
+## 🇫🇷 Version Française
+
+> Une extension Google Chrome (Manifest V3) ultra-moderne qui transforme l'interface de Gmail en un puissant outil de productivité visuel et décentralisé.
 
 Grâce à une intégration invisible et respectueuse du DOM de Gmail, **Kanban Tasks** injecte un tableau Kanban complet et hautement réactif conforme à la charte graphique de **Google Material 3** directement dans la zone principale de Gmail, tout en offrant la possibilité de l'ouvrir dans un panneau latéral ou un onglet dédié.
 
@@ -127,9 +133,11 @@ Pour stocker les métadonnées du Kanban (statuts de colonnes, étiquettes, lien
 4. Cliquez sur l'icône de plein écran (↗) pour ouvrir le tableau dans un onglet Chrome indépendant.
 
 ---
+<p align="center"><a href="https://faucheux.bzh" target="_blank" style="color: inherit; text-decoration: none;">&lt;&gt; par Fabrice Faucheux</a></p>
+
 ---
 
-# Kanban Tasks - Gmail edition *(English)*
+## 🇬🇧 English Version
 
 A cutting-edge Google Chrome extension (Manifest V3) that transforms Gmail into a powerful, visual, and decentralised productivity tool.
 
@@ -258,3 +266,6 @@ To store Kanban metadata (column states, labels, Gmail links) without any server
 2. A **Tableau Kanban** button appears in your left-hand navigation. Click it to open the interface (or use the **Alt + K** shortcut).
 3. Use the dropdown menu at the top-left of the board to switch between your Google Tasks lists. The list refreshes automatically every 30 seconds.
 4. Click the full-screen icon (↗) to open the board in a standalone Chrome tab.
+
+---
+<p align="center"><a href="https://faucheux.bzh" target="_blank" style="color: inherit; text-decoration: none;">&lt;&gt; par Fabrice Faucheux</a></p>
